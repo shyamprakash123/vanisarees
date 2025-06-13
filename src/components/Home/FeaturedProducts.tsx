@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { supabase } from '../../lib/supabase';
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -33,7 +34,7 @@ export default function FeaturedProducts() {
         .eq('featured', true)
         .limit(8)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
@@ -96,7 +97,7 @@ export default function FeaturedProducts() {
       {/* Background Decorations */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-secondary-200/30 to-accent-200/30 rounded-full blur-3xl -translate-x-32 -translate-y-32"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-3xl translate-x-48 translate-y-48"></div>
-      
+
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -118,7 +119,7 @@ export default function FeaturedProducts() {
             </span>
           </h2>
           <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
-            Discover our handpicked collection of exquisite sarees, 
+            Discover our handpicked collection of exquisite sarees,
             crafted with traditional techniques and modern elegance
           </p>
         </motion.div>
@@ -133,14 +134,14 @@ export default function FeaturedProducts() {
               viewport={{ once: true }}
               className="group relative"
             >
-              <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <Link to={`/products/${product.slug}`} className="block bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
                 <div className="relative overflow-hidden">
                   <img
                     src={product.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
                     alt={product.name}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  
+
                   {/* Discount Badge */}
                   {product.sale_price && (
                     <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
@@ -152,30 +153,25 @@ export default function FeaturedProducts() {
                   <div className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <motion.button
                       onClick={() => handleToggleWishlist(product)}
-                      className={`p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 ${
-                        isInWishlist(product.id)
-                          ? 'bg-red-500 text-white'
-                          : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
-                      }`}
+                      className={`p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 ${isInWishlist(product.id)
+                        ? 'bg-red-500 text-white'
+                        : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
+                        }`}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <Heart className="w-4 h-4" />
-                    </motion.button>
-                    
-                    <motion.button
-                      className="p-2 bg-white/90 text-gray-600 rounded-full shadow-lg backdrop-blur-sm hover:bg-primary-50 hover:text-primary-600 transition-all duration-200"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Eye className="w-4 h-4" />
                     </motion.button>
                   </div>
 
                   {/* Quick Add to Cart */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <motion.button
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // 👈 Prevents the click from bubbling up to <Link>
+                        e.preventDefault();  // 👈 Optional: also prevents default anchor behavior
+                        handleAddToCart(product);
+                      }}
                       className="w-full bg-white/90 backdrop-blur-sm hover:bg-white text-gray-900 py-2 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -190,15 +186,14 @@ export default function FeaturedProducts() {
                   <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors duration-300">
                     {product.name}
                   </h3>
-                  
+
                   <div className="flex items-center mb-3">
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-4 h-4 ${
-                            i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                          }`}
+                          className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                            }`}
                         />
                       ))}
                     </div>
@@ -225,7 +220,7 @@ export default function FeaturedProducts() {
 
                 {/* Decorative Element */}
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary-400 to-secondary-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
-              </div>
+              </Link>
             </motion.div>
           ))}
         </div>
