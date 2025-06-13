@@ -2,14 +2,23 @@ import React from 'react';
 import { X, Plus, Minus, ShoppingBag, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function CartSidebar() {
   const { state, removeItem, updateQuantity, clearCart, toggleCart } = useCart();
+  const navigate = useNavigate();
 
   const handleCheckout = () => {
-    // In a real app, this would navigate to checkout page or open payment modal
-    console.log('Proceeding to checkout with items:', state.items);
-    alert('Proceeding to checkout...');
+    if (state.items.length === 0) {
+      alert('Your cart is empty. Please add some items before checkout.');
+      return;
+    }
+    
+    // Close the cart sidebar
+    toggleCart();
+    
+    // Navigate to checkout page
+    navigate('/checkout');
   };
 
   return (

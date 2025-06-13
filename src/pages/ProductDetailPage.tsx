@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import ImageZoom from '../components/UI/ImageZoom';
 
 interface Product {
   id: string;
@@ -37,9 +38,19 @@ export default function ProductDetailPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
 
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, isInWishlist, removeItem: removeFromWishlist } = useWishlist();
+
+  // Sample multiple images for demonstration
+  const sampleImages = [
+    'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/8553879/pexels-photo-8553879.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/8553881/pexels-photo-8553881.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/8553883/pexels-photo-8553883.jpeg?auto=compress&cs=tinysrgb&w=800',
+    'https://images.pexels.com/photos/8553884/pexels-photo-8553884.jpeg?auto=compress&cs=tinysrgb&w=800'
+  ];
 
   useEffect(() => {
     if (slug) {
@@ -61,7 +72,14 @@ export default function ProductDetailPage() {
         .single();
       
       if (error) throw error;
-      setProduct(data);
+      
+      // Add sample images to the product for demonstration
+      const productWithImages = {
+        ...data,
+        images: data.images.length > 0 ? [...data.images, ...sampleImages.slice(1)] : sampleImages
+      };
+      
+      setProduct(productWithImages);
       
       // Fetch suggested products from same category
       if (data.category_id) {
@@ -185,12 +203,19 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="relative bg-white rounded-lg overflow-hidden shadow-lg">
+            {/* Main Image */}
+            <div className="relative bg-white rounded-lg overflow-hidden shadow-lg group">
               <img
-                src={product.images[currentImageIndex] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
+                src={product.images[currentImageIndex] || sampleImages[0]}
                 alt={product.name}
-                className="w-full h-96 object-cover"
+                className="w-full h-96 object-cover cursor-zoom-in"
+                onClick={() => setIsZoomOpen(true)}
               />
+              
+              {/* Zoom Icon */}
+              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <ZoomIn className="w-5 h-5 text-gray-700" />
+              </div>
               
               {product.sale_price && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
@@ -218,22 +243,36 @@ export default function ProductDetailPage() {
 
             {/* Thumbnail Images */}
             {product.images.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto">
-                {product.images.map((image, index) => (
-                  <button
+              <div className="grid grid-cols-5 gap-2">
+                {product.images.slice(0, 5).map((image, index) => (
+                  <motion.button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                      index === currentImageIndex ? 'border-primary-500' : 'border-gray-200'
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                      index === currentImageIndex 
+                        ? 'border-primary-500 ring-2 ring-primary-200' 
+                        : 'border-gray-200 hover:border-gray-300'
                     }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
                     <img
                       src={image}
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
-                  </button>
+                    {index === currentImageIndex && (
+                      <div className="absolute inset-0 bg-primary-500/20"></div>
+                    )}
+                  </motion.button>
                 ))}
+                
+                {/* Show more indicator if there are more than 5 images */}
+                {product.images.length > 5 && (
+                  <div className="aspect-square rounded-lg border-2 border-gray-200 flex items-center justify-center bg-gray-100 text-gray-500 text-sm font-medium">
+                    +{product.images.length - 5}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -419,7 +458,7 @@ export default function ProductDetailPage() {
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
                 >
                   <img
-                    src={suggestedProduct.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
+                    src={suggestedProduct.images[0] || sampleImages[0]}
                     alt={suggestedProduct.name}
                     className="w-full h-48 object-cover"
                   />
@@ -436,6 +475,14 @@ export default function ProductDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Image Zoom Modal */}
+        <ImageZoom
+          src={product.images[currentImageIndex] || sampleImages[0]}
+          alt={product.name}
+          isOpen={isZoomOpen}
+          onClose={() => setIsZoomOpen(false)}
+        />
       </div>
     </div>
   );
