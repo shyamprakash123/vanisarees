@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { DialogProvider } from './hooks/useDialog';
 
 // Layout Components
 import Header from './components/Layout/Header';
@@ -51,65 +52,67 @@ const AdminHeroSlider = React.lazy(() => import('./pages/admin/AdminHeroSlider')
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <Router>
-            <div className="min-h-screen bg-white">
-              <AnnouncementBar />
-              <Header />
-              
-              <main>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    <Route path="/reset-password" element={<ResetPasswordPage />} />
-                    <Route path="/products" element={<ProductsPage />} />
-                    <Route path="/category/:slug" element={<CategoryPage />} />
-                    <Route path="/products/:slug" element={<ProductDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-                    <Route path="/orders" element={<OrdersPage />} />
-                    <Route path="/track-order" element={<TrackOrderPage />} />
-                    <Route path="/exchange-request" element={<ExchangeRequestPage />} />
-                    
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
-                    <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
-                    <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
-                    <Route path="/admin/exchanges" element={<AdminLayout><AdminExchanges /></AdminLayout>} />
-                    <Route path="/admin/combos" element={<AdminLayout><AdminCombos /></AdminLayout>} />
-                    <Route path="/admin/analytics" element={<AdminLayout><AdminAnalytics /></AdminLayout>} />
-                    <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
-                    <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
-                    <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
-                    <Route path="/admin/announcements" element={<AdminLayout><AdminAnnouncements /></AdminLayout>} />
-                    <Route path="/admin/hero-slider" element={<AdminLayout><AdminHeroSlider /></AdminLayout>} />
-                  </Routes>
-                </Suspense>
-              </main>
-              
-              <Footer />
-              
-              {/* Floating Components */}
-              <WhatsAppFloat />
-              
-              {/* Sidebar Components */}
-              <CartSidebar />
-              <WishlistSidebar />
-              
-              {/* Toast Notifications */}
-              <Toast />
-            </div>
-          </Router>
-        </WishlistProvider>
-      </CartProvider>
-    </AuthProvider>
+    <DialogProvider>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <Router>
+              <div className="min-h-screen bg-white">
+                <AnnouncementBar />
+                <Header />
+                
+                <main>
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<RegisterPage />} />
+                      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                      <Route path="/reset-password" element={<ResetPasswordPage />} />
+                      <Route path="/products" element={<ProductsPage />} />
+                      <Route path="/category/:slug" element={<CategoryPage />} />
+                      <Route path="/products/:slug" element={<ProductDetailPage />} />
+                      <Route path="/cart" element={<CartPage />} />
+                      <Route path="/wishlist" element={<WishlistPage />} />
+                      <Route path="/checkout" element={<CheckoutPage />} />
+                      <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                      <Route path="/orders" element={<OrdersPage />} />
+                      <Route path="/track-order" element={<TrackOrderPage />} />
+                      <Route path="/exchange-request" element={<ExchangeRequestPage />} />
+                      
+                      {/* Admin Routes */}
+                      <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                      <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
+                      <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
+                      <Route path="/admin/exchanges" element={<AdminLayout><AdminExchanges /></AdminLayout>} />
+                      <Route path="/admin/combos" element={<AdminLayout><AdminCombos /></AdminLayout>} />
+                      <Route path="/admin/analytics" element={<AdminLayout><AdminAnalytics /></AdminLayout>} />
+                      <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
+                      <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
+                      <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
+                      <Route path="/admin/announcements" element={<AdminLayout><AdminAnnouncements /></AdminLayout>} />
+                      <Route path="/admin/hero-slider" element={<AdminLayout><AdminHeroSlider /></AdminLayout>} />
+                    </Routes>
+                  </Suspense>
+                </main>
+                
+                <Footer />
+                
+                {/* Floating Components */}
+                <WhatsAppFloat />
+                
+                {/* Sidebar Components */}
+                <CartSidebar />
+                <WishlistSidebar />
+                
+                {/* Toast Notifications */}
+                <Toast />
+              </div>
+            </Router>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </DialogProvider>
   );
 }
 
