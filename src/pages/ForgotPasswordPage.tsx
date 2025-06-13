@@ -3,24 +3,24 @@ import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [error, setError] = useState('');
   const { resetPassword } = useAuth();
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
       await resetPassword(email);
       setSent(true);
+      toast.success('Password reset email sent! Please check your inbox.');
     } catch (error: any) {
-      setError(error.message);
+      toast.error(error.message || 'Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -67,12 +67,6 @@ export default function ForgotPasswordPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
           <p className="text-gray-600">Enter your email to receive a reset link</p>
         </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleResetPassword} className="space-y-6">
           <div>

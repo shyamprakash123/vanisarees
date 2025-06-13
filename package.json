@@ -17,7 +17,8 @@
     "react-router-dom": "^6.20.1",
     "framer-motion": "^10.16.16",
     "react-player": "^2.13.0",
-    "browser-image-compression": "^2.0.2"
+    "browser-image-compression": "^2.0.2",
+    "react-hot-toast": "^2.4.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

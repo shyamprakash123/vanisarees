@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ShoppingCart, Heart, Menu, X, User, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, Heart, Menu, X, ChevronDown } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import UserMenu from './UserMenu';
 
 interface Category {
   id: string;
@@ -206,14 +207,8 @@ export default function Header() {
               )}
             </motion.button>
 
-            {/* User Account */}
-            <motion.button
-              className="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-full transition-all duration-200"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <User className="w-5 h-5" />
-            </motion.button>
+            {/* User Menu */}
+            <UserMenu />
 
             {/* Mobile Menu Toggle */}
             <motion.button

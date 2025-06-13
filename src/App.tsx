@@ -9,6 +9,7 @@ import Header from './components/Layout/Header';
 import AnnouncementBar from './components/Layout/AnnouncementBar';
 import Footer from './components/Layout/Footer';
 import LoadingSpinner from './components/UI/LoadingSpinner';
+import Toast from './components/UI/Toast';
 
 // Sidebar Components
 import CartSidebar from './components/Cart/CartSidebar';
@@ -29,6 +30,7 @@ const CartPage = React.lazy(() => import('./pages/CartPage'));
 const WishlistPage = React.lazy(() => import('./pages/WishlistPage'));
 const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
 const OrderConfirmationPage = React.lazy(() => import('./pages/OrderConfirmationPage'));
+const OrdersPage = React.lazy(() => import('./pages/OrdersPage'));
 const TrackOrderPage = React.lazy(() => import('./pages/TrackOrderPage'));
 const ExchangeRequestPage = React.lazy(() => import('./pages/ExchangeRequestPage'));
 
@@ -65,6 +67,7 @@ function App() {
                     <Route path="/wishlist" element={<WishlistPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
                     <Route path="/track-order" element={<TrackOrderPage />} />
                     <Route path="/exchange-request" element={<ExchangeRequestPage />} />
                     
@@ -88,6 +91,9 @@ function App() {
               {/* Sidebar Components */}
               <CartSidebar />
               <WishlistSidebar />
+              
+              {/* Toast Notifications */}
+              <Toast />
             </div>
           </Router>
         </WishlistProvider>

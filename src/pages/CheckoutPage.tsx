@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, MapPin, User, Phone, Mail, Tag, Truck } from 'lucide-react';
+import { CreditCard, MapPin, User, Phone, Mail, Tag, Truck, Banknote } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 interface Coupon {
   id: string;
@@ -17,26 +20,29 @@ interface Coupon {
 
 export default function CheckoutPage() {
   const { state: cartState, clearCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState('');
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
+    firstName: user?.user_metadata?.first_name || '',
+    lastName: user?.user_metadata?.last_name || '',
+    email: user?.email || '',
+    phone: user?.user_metadata?.phone || '',
     address: '',
     city: '',
     state: '',
     pincode: '',
-    paymentMethod: 'razorpay'
+    paymentMethod: 'cod'
   });
 
   const subtotal = cartState.total;
-  const shipping = subtotal >= 5000 ? 0 : 200;
+  const deliveryCharges = subtotal < 999 ? 100 : 0;
   const discount = appliedCoupon ? calculateDiscount(subtotal, appliedCoupon) : 0;
-  const total = subtotal + shipping - discount;
+  const codCharges = formData.paymentMethod === 'cod' ? (subtotal < 999 ? 100 : 100) : 0;
+  const total = subtotal + deliveryCharges + codCharges - discount;
 
   function calculateDiscount(amount: number, coupon: Coupon): number {
     if (coupon.discount_type === 'percentage') {
@@ -72,13 +78,11 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Check if coupon is expired
       if (data.expires_at && new Date(data.expires_at) < new Date()) {
         setCouponError('Coupon has expired');
         return;
       }
 
-      // Check minimum order amount
       if (subtotal < data.min_order_amount) {
         setCouponError(`Minimum order amount is ₹${data.min_order_amount}`);
         return;
@@ -86,6 +90,7 @@ export default function CheckoutPage() {
 
       setAppliedCoupon(data);
       setCouponCode('');
+      toast.success('Coupon applied successfully!');
     } catch (error) {
       setCouponError('Error applying coupon');
     }
@@ -94,6 +99,7 @@ export default function CheckoutPage() {
   const removeCoupon = () => {
     setAppliedCoupon(null);
     setCouponError('');
+    toast.success('Coupon removed');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,56 +108,79 @@ export default function CheckoutPage() {
 
     try {
       // Create order in database
+      const orderData = {
+        user_id: user?.id || null,
+        email: formData.email,
+        phone: formData.phone,
+        total_amount: total,
+        status: 'pending',
+        payment_method: formData.paymentMethod,
+        delivery_charges: deliveryCharges,
+        cod_charges: codCharges,
+        discount_amount: discount,
+        coupon_code: appliedCoupon?.code || null,
+        shipping_address: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode
+        },
+        items: cartState.items
+      };
+
       const { data: order, error } = await supabase
         .from('orders')
-        .insert({
-          email: formData.email,
-          phone: formData.phone,
-          total_amount: total,
-          status: 'pending'
-        })
+        .insert(orderData)
         .select()
         .single();
 
       if (error) throw error;
 
-      // Initialize Razorpay payment
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: total * 100, // Amount in paise
-        currency: 'INR',
-        name: 'VaniSarees',
-        description: 'Purchase from VaniSarees',
-        order_id: order.id,
-        handler: async (response: any) => {
-          // Update order with payment details
-          await supabase
-            .from('orders')
-            .update({
-              payment_id: response.razorpay_payment_id,
-              status: 'paid'
-            })
-            .eq('id', order.id);
+      if (formData.paymentMethod === 'prepaid') {
+        // Initialize Razorpay payment
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: total * 100,
+          currency: 'INR',
+          name: 'VaniSarees',
+          description: 'Purchase from VaniSarees',
+          order_id: order.id,
+          handler: async (response: any) => {
+            await supabase
+              .from('orders')
+              .update({
+                payment_id: response.razorpay_payment_id,
+                status: 'paid'
+              })
+              .eq('id', order.id);
 
-          clearCart();
-          alert('Payment successful! Your order has been placed.');
-          window.location.href = `/orders/${order.id}`;
-        },
-        prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: formData.phone
-        },
-        theme: {
-          color: '#F97316'
-        }
-      };
+            clearCart();
+            toast.success('Payment successful! Your order has been placed.');
+            navigate(`/order-confirmation/${order.id}`);
+          },
+          prefill: {
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            contact: formData.phone
+          },
+          theme: {
+            color: '#F97316'
+          }
+        };
 
-      const razorpay = new (window as any).Razorpay(options);
-      razorpay.open();
+        const razorpay = new (window as any).Razorpay(options);
+        razorpay.open();
+      } else {
+        // COD order
+        clearCart();
+        toast.success('Order placed successfully! You can pay on delivery.');
+        navigate(`/order-confirmation/${order.id}`);
+      }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Error creating order. Please try again.');
+      toast.error('Error creating order. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -331,14 +360,43 @@ export default function CheckoutPage() {
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="razorpay"
-                      checked={formData.paymentMethod === 'razorpay'}
+                      value="cod"
+                      checked={formData.paymentMethod === 'cod'}
+                      onChange={handleInputChange}
+                      className="text-primary-600 focus:ring-primary-500"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Banknote className="w-5 h-5 text-green-600 mr-2" />
+                          <p className="font-medium text-gray-900">Cash on Delivery</p>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          +₹{subtotal < 999 ? 100 : 100} COD charges
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">Pay when you receive your order</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="prepaid"
+                      checked={formData.paymentMethod === 'prepaid'}
                       onChange={handleInputChange}
                       className="text-primary-600 focus:ring-primary-500"
                     />
                     <div className="ml-3">
-                      <p className="font-medium text-gray-900">Razorpay (UPI, Cards, Wallets)</p>
-                      <p className="text-sm text-gray-600">Secure payment via Razorpay</p>
+                      <div className="flex items-center">
+                        <CreditCard className="w-5 h-5 text-blue-600 mr-2" />
+                        <p className="font-medium text-gray-900">Online Payment</p>
+                        <span className="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                          No COD charges
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">UPI, Cards, Wallets via Razorpay</p>
                     </div>
                   </label>
                 </div>
@@ -422,25 +480,43 @@ export default function CheckoutPage() {
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">₹{subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 flex items-center">
-                    <Truck className="w-4 h-4 mr-1" />
-                    Shipping
-                  </span>
-                  <span className="font-medium">
-                    {shipping === 0 ? 'Free' : `₹${shipping}`}
-                  </span>
-                </div>
+                
+                {deliveryCharges > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 flex items-center">
+                      <Truck className="w-4 h-4 mr-1" />
+                      Delivery Charges
+                    </span>
+                    <span className="font-medium">₹{deliveryCharges}</span>
+                  </div>
+                )}
+                
+                {codCharges > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">COD Charges</span>
+                    <span className="font-medium">₹{codCharges}</span>
+                  </div>
+                )}
+                
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount</span>
                     <span className="font-medium">-₹{discount.toLocaleString()}</span>
                   </div>
                 )}
+                
                 <div className="flex justify-between text-lg font-bold border-t pt-3">
                   <span>Total</span>
                   <span>₹{total.toLocaleString()}</span>
                 </div>
+                
+                {formData.paymentMethod === 'cod' && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-yellow-800 text-sm">
+                      <strong>Amount to pay on delivery:</strong> ₹{total.toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Place Order Button */}
@@ -453,7 +529,11 @@ export default function CheckoutPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                {loading ? 'Processing...' : `Place Order - ₹${total.toLocaleString()}`}
+                {loading ? 'Processing...' : 
+                  formData.paymentMethod === 'cod' 
+                    ? `Place Order - ₹${total.toLocaleString()}` 
+                    : `Pay Now - ₹${total.toLocaleString()}`
+                }
               </motion.button>
 
               <p className="text-xs text-gray-500 mt-3 text-center">

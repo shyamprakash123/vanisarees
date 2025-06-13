@@ -1,32 +1,28 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      
-      // Redirect to home or dashboard
-      window.location.href = '/';
+      await signIn(email, password);
+      toast.success('Welcome back! Successfully signed in.');
+      navigate('/');
     } catch (error: any) {
-      setError(error.message);
+      toast.error(error.message || 'Failed to sign in. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -46,12 +42,6 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to your VaniSarees account</p>
         </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
@@ -100,9 +90,9 @@ export default function LoginPage() {
               <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
               <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
-            <a href="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+            <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <motion.button
@@ -126,9 +116,9 @@ export default function LoginPage() {
         <div className="mt-8 text-center">
           <p className="text-gray-600">
             Don't have an account?{' '}
-            <a href="/register" className="text-primary-600 hover:text-primary-700 font-semibold">
+            <Link to="/register" className="text-primary-600 hover:text-primary-700 font-semibold">
               Sign up
-            </a>
+            </Link>
           </p>
         </div>
       </motion.div>
