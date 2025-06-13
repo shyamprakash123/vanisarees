@@ -41,7 +41,7 @@ export default function CheckoutPage() {
   const subtotal = cartState.total;
   const deliveryCharges = subtotal < 999 ? 100 : 0;
   const discount = appliedCoupon ? calculateDiscount(subtotal, appliedCoupon) : 0;
-  const codCharges = formData.paymentMethod === 'cod' ? (subtotal < 999 ? 100 : 100) : 0;
+  const codCharges = formData.paymentMethod === 'cod' ? (subtotal < 999 ? 100 : 0) : 0;
   const total = subtotal + deliveryCharges + codCharges - discount;
 
   function calculateDiscount(amount: number, coupon: Coupon): number {
@@ -372,7 +372,7 @@ export default function CheckoutPage() {
                           <p className="font-medium text-gray-900">Cash on Delivery</p>
                         </div>
                         <span className="text-sm text-gray-600">
-                          +₹{subtotal < 999 ? 100 : 100} COD charges
+                          +₹{subtotal < 999 ? 100 : 0} COD charges
                         </span>
                       </div>
                       <p className="text-sm text-gray-600">Pay when you receive your order</p>
