@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { Heart, ShoppingCart, Share2, Star, Truck, Shield, RotateCcw, ChevronLeft, ChevronRight, ZoomIn, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
@@ -18,6 +18,7 @@ interface Product {
   category_id: string;
   stock_quantity: number;
   featured: boolean;
+  video_url?: string;
   categories?: {
     name: string;
   };
@@ -39,6 +40,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('');
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, isInWishlist, removeItem: removeFromWishlist } = useWishlist();
@@ -51,6 +53,9 @@ export default function ProductDetailPage() {
     'https://images.pexels.com/photos/8553883/pexels-photo-8553883.jpeg?auto=compress&cs=tinysrgb&w=800',
     'https://images.pexels.com/photos/8553884/pexels-photo-8553884.jpeg?auto=compress&cs=tinysrgb&w=800'
   ];
+
+  // Sample video URLs for demonstration
+  const sampleVideoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ';
 
   useEffect(() => {
     if (slug) {
@@ -73,13 +78,14 @@ export default function ProductDetailPage() {
       
       if (error) throw error;
       
-      // Add sample images to the product for demonstration
-      const productWithImages = {
+      // Add sample images and video to the product for demonstration
+      const productWithMedia = {
         ...data,
-        images: data.images.length > 0 ? [...data.images, ...sampleImages.slice(1)] : sampleImages
+        images: data.images.length > 0 ? [...data.images, ...sampleImages.slice(1)] : sampleImages,
+        video_url: sampleVideoUrl
       };
       
-      setProduct(productWithImages);
+      setProduct(productWithMedia);
       
       // Fetch suggested products from same category
       if (data.category_id) {
@@ -203,40 +209,72 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
-            {/* Main Image */}
+            {/* Main Image/Video */}
             <div className="relative bg-white rounded-lg overflow-hidden shadow-lg group">
-              <img
-                src={product.images[currentImageIndex] || sampleImages[0]}
-                alt={product.name}
-                className="w-full h-96 object-cover cursor-zoom-in"
-                onClick={() => setIsZoomOpen(true)}
-              />
-              
-              {/* Zoom Icon */}
-              <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <ZoomIn className="w-5 h-5 text-gray-700" />
-              </div>
-              
-              {product.sale_price && (
-                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  {getDiscountPercentage(product.price, product.sale_price)}% OFF
+              {showVideo && product.video_url ? (
+                <div className="relative w-full h-96">
+                  <iframe
+                    src={`${product.video_url}?autoplay=1&controls=1&showinfo=0&rel=0`}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    title={`${product.name} video`}
+                  />
+                  <button
+                    onClick={() => setShowVideo(false)}
+                    className="absolute top-4 right-4 bg-black/70 text-white p-2 rounded-full hover:bg-black/90 transition-colors duration-200"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-              )}
-
-              {product.images.length > 1 && (
+              ) : (
                 <>
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
+                  <img
+                    src={product.images[currentImageIndex] || sampleImages[0]}
+                    alt={product.name}
+                    className="w-full h-96 object-cover cursor-zoom-in"
+                    onClick={() => setIsZoomOpen(true)}
+                  />
+                  
+                  {/* Video Play Button */}
+                  {product.video_url && (
+                    <button
+                      onClick={() => setShowVideo(true)}
+                      className="absolute top-4 left-4 bg-black/70 text-white p-3 rounded-full hover:bg-black/90 transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <Play className="w-5 h-5" />
+                      <span className="text-sm font-medium">Watch Video</span>
+                    </button>
+                  )}
+                  
+                  {/* Zoom Icon */}
+                  <div className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <ZoomIn className="w-5 h-5 text-gray-700" />
+                  </div>
+                  
+                  {product.sale_price && (
+                    <div className="absolute top-4 right-16 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      {getDiscountPercentage(product.price, product.sale_price)}% OFF
+                    </div>
+                  )}
+
+                  {product.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -247,9 +285,12 @@ export default function ProductDetailPage() {
                 {product.images.slice(0, 5).map((image, index) => (
                   <motion.button
                     key={index}
-                    onClick={() => setCurrentImageIndex(index)}
+                    onClick={() => {
+                      setCurrentImageIndex(index);
+                      setShowVideo(false);
+                    }}
                     className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                      index === currentImageIndex 
+                      index === currentImageIndex && !showVideo
                         ? 'border-primary-500 ring-2 ring-primary-200' 
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
@@ -261,11 +302,30 @@ export default function ProductDetailPage() {
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
-                    {index === currentImageIndex && (
+                    {index === currentImageIndex && !showVideo && (
                       <div className="absolute inset-0 bg-primary-500/20"></div>
                     )}
                   </motion.button>
                 ))}
+                
+                {/* Video Thumbnail */}
+                {product.video_url && (
+                  <motion.button
+                    onClick={() => setShowVideo(true)}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 bg-black flex items-center justify-center ${
+                      showVideo
+                        ? 'border-primary-500 ring-2 ring-primary-200' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Play className="w-6 h-6 text-white" />
+                    {showVideo && (
+                      <div className="absolute inset-0 bg-primary-500/20"></div>
+                    )}
+                  </motion.button>
+                )}
                 
                 {/* Show more indicator if there are more than 5 images */}
                 {product.images.length > 5 && (

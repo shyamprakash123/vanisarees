@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Grid, List, Heart, ShoppingCart, Star } from 'lucide-react';
+import { Search, Filter, Grid, List, Heart, ShoppingCart, Star, Play } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
@@ -15,6 +15,7 @@ interface Product {
   category_id: string;
   stock_quantity: number;
   featured: boolean;
+  video_url?: string;
   categories?: {
     name: string;
   };
@@ -36,9 +37,20 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [videoDelayTimeout, setVideoDelayTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, isInWishlist, removeItem: removeFromWishlist } = useWishlist();
+
+  // Sample video URLs for demonstration
+  const sampleVideos = [
+    'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'https://www.youtube.com/embed/9bZkp7q19f0',
+    'https://www.youtube.com/embed/kJQP7kiw5Fk',
+    'https://www.youtube.com/embed/tgbNymZ7vqY',
+    'https://www.youtube.com/embed/60ItHLz5WEA'
+  ];
 
   useEffect(() => {
     fetchProducts();
@@ -71,7 +83,14 @@ export default function ProductsPage() {
       const { data, error } = await query;
       
       if (error) throw error;
-      setProducts(data || []);
+      
+      // Add sample video URLs to products for demonstration
+      const productsWithVideos = (data || []).map((product, index) => ({
+        ...product,
+        video_url: sampleVideos[index % sampleVideos.length]
+      }));
+      
+      setProducts(productsWithVideos);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -91,6 +110,29 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
+  };
+
+  const handleMouseEnter = (productId: string) => {
+    // Clear any existing timeout
+    if (videoDelayTimeout) {
+      clearTimeout(videoDelayTimeout);
+    }
+    
+    // Set a 2-second delay before showing video
+    const timeout = setTimeout(() => {
+      setHoveredProduct(productId);
+    }, 2000);
+    
+    setVideoDelayTimeout(timeout);
+  };
+
+  const handleMouseLeave = () => {
+    // Clear timeout and hide video immediately
+    if (videoDelayTimeout) {
+      clearTimeout(videoDelayTimeout);
+      setVideoDelayTimeout(null);
+    }
+    setHoveredProduct(null);
   };
 
   const filteredProducts = products.filter(product => {
@@ -265,13 +307,39 @@ export default function ProductsPage() {
               className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ${
                 viewMode === 'list' ? 'flex' : ''
               }`}
+              onMouseEnter={() => handleMouseEnter(product.id)}
+              onMouseLeave={handleMouseLeave}
             >
               <div className={`relative ${viewMode === 'list' ? 'w-48 flex-shrink-0' : ''}`}>
+                {/* Product Image */}
                 <img
                   src={product.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
                   alt={product.name}
-                  className={`w-full object-cover ${viewMode === 'list' ? 'h-full' : 'h-64'}`}
+                  className={`w-full object-cover transition-all duration-700 ${
+                    viewMode === 'list' ? 'h-full' : 'h-64'
+                  } ${hoveredProduct === product.id ? 'opacity-0' : 'opacity-100'}`}
                 />
+
+                {/* Video Overlay */}
+                {hoveredProduct === product.id && product.video_url && (
+                  <div className={`absolute inset-0 bg-black ${viewMode === 'list' ? 'h-full' : ''}`}>
+                    <iframe
+                      src={`${product.video_url}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1`}
+                      className="w-full h-full object-cover"
+                      frameBorder="0"
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
+                      title={`${product.name} video`}
+                    />
+                  </div>
+                )}
+
+                {/* Video Play Icon (shown when not hovered) */}
+                {product.video_url && hoveredProduct !== product.id && (
+                  <div className="absolute top-2 left-2 bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Play className="w-4 h-4" />
+                  </div>
+                )}
                 
                 {product.sale_price && (
                   <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">

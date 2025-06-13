@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Eye, X, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Package, Eye, X, Truck, CheckCircle, Clock, AlertCircle, CreditCard, Banknote } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -20,6 +20,7 @@ interface Order {
   items: any[];
   shipping_address: any;
   tracking_id: string | null;
+  payment_id: string | null;
 }
 
 export default function OrdersPage() {
@@ -75,6 +76,7 @@ export default function OrdersPage() {
       case 'pending':
         return <Clock className="w-5 h-5 text-yellow-500" />;
       case 'confirmed':
+      case 'paid':
         return <CheckCircle className="w-5 h-5 text-blue-500" />;
       case 'shipped':
         return <Truck className="w-5 h-5 text-purple-500" />;
@@ -92,6 +94,7 @@ export default function OrdersPage() {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'confirmed':
+      case 'paid':
         return 'bg-blue-100 text-blue-800';
       case 'shipped':
         return 'bg-purple-100 text-purple-800';
@@ -104,8 +107,20 @@ export default function OrdersPage() {
     }
   };
 
+  const getPaymentMethodIcon = (method: string) => {
+    return method === 'cod' ? <Banknote className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />;
+  };
+
+  const getPaymentMethodLabel = (method: string) => {
+    return method === 'cod' ? 'Cash on Delivery' : 'Online Payment';
+  };
+
   const canCancelOrder = (order: Order) => {
-    return ['pending', 'confirmed'].includes(order.status);
+    return ['pending', 'confirmed', 'paid'].includes(order.status);
+  };
+
+  const calculateSubtotal = (order: Order) => {
+    return order.total_amount - order.delivery_charges - order.cod_charges + order.discount_amount;
   };
 
   if (!user) {
@@ -194,18 +209,27 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
                     <p className="font-semibold text-lg">₹{order.total_amount.toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Payment Method</p>
-                    <p className="font-medium capitalize">{order.payment_method}</p>
+                    <div className="flex items-center space-x-1">
+                      {getPaymentMethodIcon(order.payment_method)}
+                      <p className="font-medium">{getPaymentMethodLabel(order.payment_method)}</p>
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Items</p>
                     <p className="font-medium">{order.items?.length || 0} items</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Amount to Pay</p>
+                    <p className="font-semibold text-lg text-primary-600">
+                      ₹{order.total_amount.toLocaleString()}
+                    </p>
                   </div>
                 </div>
 
@@ -238,13 +262,13 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* Order Details Modal */}
+        {/* Enhanced Order Details Modal */}
         {selectedOrder && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -259,13 +283,48 @@ export default function OrdersPage() {
                   </button>
                 </div>
 
-                {/* Order Status */}
-                <div className="mb-6">
-                  <div className="flex items-center space-x-3 mb-4">
-                    {getStatusIcon(selectedOrder.status)}
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
-                      {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
-                    </span>
+                {/* Order Status & Payment Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-3">Order Status</h3>
+                    <div className="flex items-center space-x-3 mb-2">
+                      {getStatusIcon(selectedOrder.status)}
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrder.status)}`}>
+                        {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Last updated: {new Date(selectedOrder.updated_at).toLocaleString('en-IN')}
+                    </p>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-3">Payment Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Payment Method:</span>
+                        <div className="flex items-center space-x-1">
+                          {getPaymentMethodIcon(selectedOrder.payment_method)}
+                          <span className="font-medium">{getPaymentMethodLabel(selectedOrder.payment_method)}</span>
+                        </div>
+                      </div>
+                      {selectedOrder.payment_id && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Payment ID:</span>
+                          <span className="font-medium text-sm">{selectedOrder.payment_id}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Order Type:</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          selectedOrder.payment_method === 'cod' 
+                            ? 'bg-orange-100 text-orange-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {selectedOrder.payment_method === 'cod' ? 'Cash on Delivery' : 'Prepaid'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -278,47 +337,81 @@ export default function OrdersPage() {
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-12 h-12 object-cover rounded-lg"
+                          className="w-16 h-16 object-cover rounded-lg"
                         />
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">{item.name}</p>
                           <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                          <p className="text-sm text-primary-600 font-medium">₹{item.price.toLocaleString()} each</p>
                         </div>
-                        <p className="font-medium">₹{(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="font-semibold text-lg">₹{(item.price * item.quantity).toLocaleString()}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Price Breakdown */}
+                {/* Enhanced Price Breakdown */}
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-900 mb-3">Price Breakdown</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>₹{(selectedOrder.total_amount - selectedOrder.delivery_charges - selectedOrder.cod_charges + selectedOrder.discount_amount).toLocaleString()}</span>
-                    </div>
-                    {selectedOrder.delivery_charges > 0 && (
-                      <div className="flex justify-between">
-                        <span>Delivery Charges</span>
-                        <span>₹{selectedOrder.delivery_charges}</span>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-700">Subtotal</span>
+                        <span className="font-medium">₹{calculateSubtotal(selectedOrder).toLocaleString()}</span>
                       </div>
-                    )}
-                    {selectedOrder.cod_charges > 0 && (
-                      <div className="flex justify-between">
-                        <span>COD Charges</span>
-                        <span>₹{selectedOrder.cod_charges}</span>
+                      
+                      {selectedOrder.delivery_charges > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700 flex items-center">
+                            <Truck className="w-4 h-4 mr-1" />
+                            Delivery Charges
+                          </span>
+                          <span className="font-medium">₹{selectedOrder.delivery_charges.toLocaleString()}</span>
+                        </div>
+                      )}
+                      
+                      {selectedOrder.cod_charges > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700 flex items-center">
+                            <Banknote className="w-4 h-4 mr-1" />
+                            COD Charges
+                          </span>
+                          <span className="font-medium">₹{selectedOrder.cod_charges.toLocaleString()}</span>
+                        </div>
+                      )}
+                      
+                      {selectedOrder.discount_amount > 0 && (
+                        <div className="flex justify-between items-center text-green-600">
+                          <span className="flex items-center">
+                            Discount {selectedOrder.coupon_code && `(${selectedOrder.coupon_code})`}
+                          </span>
+                          <span className="font-medium">-₹{selectedOrder.discount_amount.toLocaleString()}</span>
+                        </div>
+                      )}
+                      
+                      <div className="border-t border-gray-200 pt-3">
+                        <div className="flex justify-between items-center text-lg font-bold">
+                          <span>Total Amount</span>
+                          <span className="text-primary-600">₹{selectedOrder.total_amount.toLocaleString()}</span>
+                        </div>
                       </div>
-                    )}
-                    {selectedOrder.discount_amount > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Discount {selectedOrder.coupon_code && `(${selectedOrder.coupon_code})`}</span>
-                        <span>-₹{selectedOrder.discount_amount}</span>
+
+                      {/* Amount to Pay Section */}
+                      <div className="bg-primary-50 border border-primary-200 rounded-lg p-3 mt-3">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-primary-800">
+                            {selectedOrder.payment_method === 'cod' ? 'Amount to Pay on Delivery:' : 'Amount Paid:'}
+                          </span>
+                          <span className="text-xl font-bold text-primary-600">
+                            ₹{selectedOrder.total_amount.toLocaleString()}
+                          </span>
+                        </div>
+                        {selectedOrder.payment_method === 'cod' && selectedOrder.status !== 'delivered' && (
+                          <p className="text-sm text-primary-700 mt-1">
+                            Please keep exact change ready for delivery
+                          </p>
+                        )}
                       </div>
-                    )}
-                    <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                      <span>Total</span>
-                      <span>₹{selectedOrder.total_amount.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -327,10 +420,12 @@ export default function OrdersPage() {
                 {selectedOrder.shipping_address && (
                   <div className="mb-6">
                     <h3 className="font-semibold text-gray-900 mb-3">Shipping Address</h3>
-                    <div className="text-sm text-gray-600">
-                      <p>{selectedOrder.shipping_address.firstName} {selectedOrder.shipping_address.lastName}</p>
-                      <p>{selectedOrder.shipping_address.address}</p>
-                      <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.pincode}</p>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-700">
+                        <p className="font-medium">{selectedOrder.shipping_address.firstName} {selectedOrder.shipping_address.lastName}</p>
+                        <p>{selectedOrder.shipping_address.address}</p>
+                        <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.pincode}</p>
+                      </div>
                     </div>
                   </div>
                 )}

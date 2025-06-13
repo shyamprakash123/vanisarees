@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, ShoppingCart, Eye, Star, Sparkles } from 'lucide-react';
+import { Heart, ShoppingCart, Eye, Star, Sparkles, Play } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -14,13 +14,25 @@ interface Product {
   sale_price: number | null;
   images: string[];
   category_id: string;
+  video_url?: string; // Optional video URL
 }
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [videoDelayTimeout, setVideoDelayTimeout] = useState<NodeJS.Timeout | null>(null);
   const { addItem } = useCart();
   const { addItem: addToWishlist, isInWishlist, removeItem: removeFromWishlist } = useWishlist();
+
+  // Sample video URLs for demonstration
+  const sampleVideos = [
+    'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    'https://www.youtube.com/embed/9bZkp7q19f0',
+    'https://www.youtube.com/embed/kJQP7kiw5Fk',
+    'https://www.youtube.com/embed/tgbNymZ7vqY',
+    'https://www.youtube.com/embed/60ItHLz5WEA'
+  ];
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -36,7 +48,14 @@ export default function FeaturedProducts() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      
+      // Add sample video URLs to products for demonstration
+      const productsWithVideos = (data || []).map((product, index) => ({
+        ...product,
+        video_url: sampleVideos[index % sampleVideos.length]
+      }));
+      
+      setProducts(productsWithVideos);
     } catch (error) {
       console.error('Error fetching featured products:', error);
     } finally {
@@ -64,6 +83,29 @@ export default function FeaturedProducts() {
         image: product.images[0] || '/placeholder-saree.jpg'
       });
     }
+  };
+
+  const handleMouseEnter = (productId: string) => {
+    // Clear any existing timeout
+    if (videoDelayTimeout) {
+      clearTimeout(videoDelayTimeout);
+    }
+    
+    // Set a 2-second delay before showing video
+    const timeout = setTimeout(() => {
+      setHoveredProduct(productId);
+    }, 2000);
+    
+    setVideoDelayTimeout(timeout);
+  };
+
+  const handleMouseLeave = () => {
+    // Clear timeout and hide video immediately
+    if (videoDelayTimeout) {
+      clearTimeout(videoDelayTimeout);
+      setVideoDelayTimeout(null);
+    }
+    setHoveredProduct(null);
   };
 
   const getDiscountPercentage = (originalPrice: number, salePrice: number) => {
@@ -133,18 +175,44 @@ export default function FeaturedProducts() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
               className="group relative"
+              onMouseEnter={() => handleMouseEnter(product.id)}
+              onMouseLeave={handleMouseLeave}
             >
               <Link to={`/products/${product.slug}`} className="block bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden h-64">
+                  {/* Product Image */}
                   <img
                     src={product.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
                     alt={product.name}
-                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
+                    className={`w-full h-full object-cover transition-all duration-700 ${
+                      hoveredProduct === product.id ? 'opacity-0 scale-110' : 'opacity-100 group-hover:scale-110'
+                    }`}
                   />
+
+                  {/* Video Overlay */}
+                  {hoveredProduct === product.id && product.video_url && (
+                    <div className="absolute inset-0 bg-black">
+                      <iframe
+                        src={`${product.video_url}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1`}
+                        className="w-full h-full object-cover"
+                        frameBorder="0"
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                        title={`${product.name} video`}
+                      />
+                    </div>
+                  )}
+
+                  {/* Video Play Icon (shown when not hovered) */}
+                  {product.video_url && hoveredProduct !== product.id && (
+                    <div className="absolute top-2 left-2 bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <Play className="w-4 h-4" />
+                    </div>
+                  )}
 
                   {/* Discount Badge */}
                   {product.sale_price && (
-                    <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
                       {getDiscountPercentage(product.price, product.sale_price)}% OFF
                     </div>
                   )}
@@ -152,7 +220,11 @@ export default function FeaturedProducts() {
                   {/* Quick Actions */}
                   <div className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <motion.button
-                      onClick={() => handleToggleWishlist(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleToggleWishlist(product);
+                      }}
                       className={`p-2 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 ${isInWishlist(product.id)
                         ? 'bg-red-500 text-white'
                         : 'bg-white/90 text-gray-600 hover:bg-red-50 hover:text-red-500'
@@ -168,8 +240,8 @@ export default function FeaturedProducts() {
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
                     <motion.button
                       onClick={(e) => {
-                        e.stopPropagation(); // 👈 Prevents the click from bubbling up to <Link>
-                        e.preventDefault();  // 👈 Optional: also prevents default anchor behavior
+                        e.stopPropagation();
+                        e.preventDefault();
                         handleAddToCart(product);
                       }}
                       className="w-full bg-white/90 backdrop-blur-sm hover:bg-white text-gray-900 py-2 px-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg"
