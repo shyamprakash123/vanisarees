@@ -22,6 +22,14 @@ import WishlistSidebar from './components/Wishlist/WishlistSidebar';
 // Float Components
 import WhatsAppFloat from './components/WhatsApp/WhatsAppFloat';
 
+// Pages
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProductsPage from './pages/ProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CheckoutPage from './pages/CheckoutPage';
+import TrackOrderPage from './pages/TrackOrderPage';
+
 function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50">
@@ -46,7 +54,12 @@ function App() {
             <main>
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                {/* Add more routes as needed */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/:slug" element={<ProductDetailPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/track-order" element={<TrackOrderPage />} />
               </Routes>
             </main>
             
