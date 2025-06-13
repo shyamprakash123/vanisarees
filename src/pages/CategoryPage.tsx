@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Search, Filter, Grid, List, Heart, ShoppingCart, Star, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -24,16 +25,19 @@ interface Product {
 interface Category {
   id: string;
   name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
 }
 
 const ITEMS_PER_PAGE = 12;
 
-export default function ProductsPage() {
+export default function CategoryPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
   const [sortBy, setSortBy] = useState('name');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -56,13 +60,30 @@ export default function ProductsPage() {
   ];
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-  }, [selectedCategory, sortBy, currentPage]);
+    if (slug) {
+      fetchCategory();
+      fetchProducts();
+    }
+  }, [slug, sortBy, currentPage]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, priceRange, selectedCategory]);
+  }, [searchTerm, priceRange]);
+
+  const fetchCategory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      
+      if (error) throw error;
+      setCategory(data);
+    } catch (error) {
+      console.error('Error fetching category:', error);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -75,11 +96,8 @@ export default function ProductsPage() {
           categories (
             name
           )
-        `, { count: 'exact' });
-
-      if (selectedCategory) {
-        query = query.eq('category_id', selectedCategory);
-      }
+        `, { count: 'exact' })
+        .eq('categories.slug', slug);
 
       // Apply sorting
       if (sortBy === 'price_low') {
@@ -111,20 +129,6 @@ export default function ProductsPage() {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
     }
   };
 
@@ -205,12 +209,43 @@ export default function ProductsPage() {
     );
   }
 
+  if (!category) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Category Not Found</h1>
+          <p className="text-gray-600 mb-8">The category you're looking for doesn't exist.</p>
+          <a
+            href="/products"
+            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
+          >
+            Browse All Products
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        {/* Header */}
+        {/* Category Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">All Products</h1>
+          <div className="relative h-64 rounded-lg overflow-hidden mb-6">
+            <img
+              src={category.image_url || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=1200'}
+              alt={category.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <div className="text-center text-white">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">{category.name}</h1>
+                {category.description && (
+                  <p className="text-lg md:text-xl max-w-2xl mx-auto">{category.description}</p>
+                )}
+              </div>
+            </div>
+          </div>
           
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -272,23 +307,7 @@ export default function ProductsPage() {
               exit={{ opacity: 0, height: 0 }}
               className="mt-4 p-4 bg-white rounded-lg shadow-md"
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Min Price</label>
                   <input

@@ -26,6 +26,7 @@ const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const ProductsPage = React.lazy(() => import('./pages/ProductsPage'));
+const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const ProductDetailPage = React.lazy(() => import('./pages/ProductDetailPage'));
 const CartPage = React.lazy(() => import('./pages/CartPage'));
 const WishlistPage = React.lazy(() => import('./pages/WishlistPage'));
@@ -45,6 +46,8 @@ const AdminAnalytics = React.lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminCoupons = React.lazy(() => import('./pages/admin/AdminCoupons'));
 const AdminCustomers = React.lazy(() => import('./pages/admin/AdminCustomers'));
 const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
+const AdminAnnouncements = React.lazy(() => import('./pages/admin/AdminAnnouncements'));
+const AdminHeroSlider = React.lazy(() => import('./pages/admin/AdminHeroSlider'));
 
 function App() {
   return (
@@ -65,6 +68,7 @@ function App() {
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
                     <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/category/:slug" element={<CategoryPage />} />
                     <Route path="/products/:slug" element={<ProductDetailPage />} />
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/wishlist" element={<WishlistPage />} />
@@ -84,6 +88,8 @@ function App() {
                     <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
                     <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
                     <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
+                    <Route path="/admin/announcements" element={<AdminLayout><AdminAnnouncements /></AdminLayout>} />
+                    <Route path="/admin/hero-slider" element={<AdminLayout><AdminHeroSlider /></AdminLayout>} />
                   </Routes>
                 </Suspense>
               </main>

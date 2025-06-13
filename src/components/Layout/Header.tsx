@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserMenu from './UserMenu';
 import { useAuth } from '../../contexts/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface Category {
   id: string;
@@ -14,8 +14,18 @@ interface Category {
   slug: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  sale_price: number | null;
+  images: string[];
+}
+
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const isAdminPath = location.pathname.startsWith('/admin');
@@ -30,6 +40,9 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const { state: cartState, toggleCart } = useCart();
   const { state: wishlistState, toggleWishlist } = useWishlist();
 
@@ -44,6 +57,18 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      if (searchTerm.trim()) {
+        performSearch(searchTerm);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchTerm]);
+
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
@@ -56,6 +81,42 @@ export default function Header() {
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
+  };
+
+  const performSearch = async (query: string) => {
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, slug, price, sale_price, images')
+        .ilike('name', `%${query}%`)
+        .limit(5);
+      
+      if (error) throw error;
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Error searching products:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchTerm)}`);
+      setIsSearchOpen(false);
+      setSearchTerm('');
+      setSearchResults([]);
+    }
+  };
+
+  const handleProductClick = (slug: string) => {
+    navigate(`/products/${slug}`);
+    setIsSearchOpen(false);
+    setSearchTerm('');
+    setSearchResults([]);
   };
 
   return (
@@ -243,21 +304,81 @@ export default function Header() {
               exit={{ opacity: 0, height: 0 }}
               className="mt-4 relative"
             >
-              <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
                   placeholder="Search for beautiful sarees..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-3 pl-12 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  autoFocus
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <motion.button
+                  type="submit"
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Search
                 </motion.button>
-              </div>
+              </form>
+
+              {/* Search Results */}
+              {(searchResults.length > 0 || isSearching) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-lg mt-2 max-h-96 overflow-y-auto z-50"
+                >
+                  {isSearching ? (
+                    <div className="p-4 text-center">
+                      <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <p className="text-gray-600">Searching...</p>
+                    </div>
+                  ) : (
+                    <>
+                      {searchResults.map((product) => (
+                        <motion.div
+                          key={product.id}
+                          onClick={() => handleProductClick(product.slug)}
+                          className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          whileHover={{ backgroundColor: '#f9fafb' }}
+                        >
+                          <img
+                            src={product.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=100'}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded-lg"
+                          />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900 line-clamp-1">{product.name}</h4>
+                            <div className="flex items-center space-x-2">
+                              {product.sale_price ? (
+                                <>
+                                  <span className="text-primary-600 font-semibold">₹{product.sale_price.toLocaleString()}</span>
+                                  <span className="text-gray-500 line-through text-sm">₹{product.price.toLocaleString()}</span>
+                                </>
+                              ) : (
+                                <span className="text-primary-600 font-semibold">₹{product.price.toLocaleString()}</span>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                      {searchTerm && (
+                        <div className="p-3 border-t border-gray-200">
+                          <button
+                            onClick={() => handleSearchSubmit(new Event('submit') as any)}
+                            className="w-full text-left text-primary-600 hover:text-primary-700 font-medium"
+                          >
+                            View all results for "{searchTerm}"
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

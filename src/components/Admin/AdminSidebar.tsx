@@ -11,7 +11,9 @@ import {
   Settings,
   LogOut,
   Sparkles,
-  Home
+  Home,
+  Megaphone,
+  Image as ImageIcon
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,6 +25,8 @@ const menuItems = [
   { icon: RefreshCw, label: 'Exchanges', path: '/admin/exchanges' },
   { icon: Package, label: 'Combos', path: '/admin/combos' },
   { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
+  { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
+  { icon: ImageIcon, label: 'Hero Slider', path: '/admin/hero-slider' },
   { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
   { icon: Users, label: 'Customers', path: '/admin/customers' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
