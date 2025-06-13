@@ -1,19 +1,14 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Layout Components
 import Header from './components/Layout/Header';
 import AnnouncementBar from './components/Layout/AnnouncementBar';
 import Footer from './components/Layout/Footer';
-
-// Home Components
-import HeroSlider from './components/Home/HeroSlider';
-import CategoriesSection from './components/Home/CategoriesSection';
-import FeaturedProducts from './components/Home/FeaturedProducts';
-import ComboSection from './components/Home/ComboSection';
-import TestimonialsSection from './components/Home/TestimonialsSection';
+import LoadingSpinner from './components/UI/LoadingSpinner';
 
 // Sidebar Components
 import CartSidebar from './components/Cart/CartSidebar';
@@ -22,59 +17,82 @@ import WishlistSidebar from './components/Wishlist/WishlistSidebar';
 // Float Components
 import WhatsAppFloat from './components/WhatsApp/WhatsAppFloat';
 
-// Pages
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProductsPage from './pages/ProductsPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CheckoutPage from './pages/CheckoutPage';
-import TrackOrderPage from './pages/TrackOrderPage';
+// Lazy load pages
+const HomePage = React.lazy(() => import('./pages/HomePage'));
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
+const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
+const ProductsPage = React.lazy(() => import('./pages/ProductsPage'));
+const ProductDetailPage = React.lazy(() => import('./pages/ProductDetailPage'));
+const CartPage = React.lazy(() => import('./pages/CartPage'));
+const WishlistPage = React.lazy(() => import('./pages/WishlistPage'));
+const CheckoutPage = React.lazy(() => import('./pages/CheckoutPage'));
+const OrderConfirmationPage = React.lazy(() => import('./pages/OrderConfirmationPage'));
+const TrackOrderPage = React.lazy(() => import('./pages/TrackOrderPage'));
+const ExchangeRequestPage = React.lazy(() => import('./pages/ExchangeRequestPage'));
 
-function HomePage() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50">
-      <HeroSlider />
-      <CategoriesSection />
-      <FeaturedProducts />
-      <ComboSection />
-      <TestimonialsSection />
-    </div>
-  );
-}
+// Admin Pages
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminProducts = React.lazy(() => import('./pages/admin/AdminProducts'));
+const AdminOrders = React.lazy(() => import('./pages/admin/AdminOrders'));
+const AdminExchanges = React.lazy(() => import('./pages/admin/AdminExchanges'));
+const AdminCombos = React.lazy(() => import('./pages/admin/AdminCombos'));
+const AdminAnalytics = React.lazy(() => import('./pages/admin/AdminAnalytics'));
+const AdminCoupons = React.lazy(() => import('./pages/admin/AdminCoupons'));
 
 function App() {
   return (
-    <CartProvider>
-      <WishlistProvider>
-        <Router>
-          <div className="min-h-screen bg-white">
-            <AnnouncementBar />
-            <Header />
-            
-            <main>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/products/:slug" element={<ProductDetailPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/track-order" element={<TrackOrderPage />} />
-              </Routes>
-            </main>
-            
-            <Footer />
-            
-            {/* Floating Components */}
-            <WhatsAppFloat />
-            
-            {/* Sidebar Components */}
-            <CartSidebar />
-            <WishlistSidebar />
-          </div>
-        </Router>
-      </WishlistProvider>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <WishlistProvider>
+          <Router>
+            <div className="min-h-screen bg-white">
+              <AnnouncementBar />
+              <Header />
+              
+              <main>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/products/:slug" element={<ProductDetailPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                    <Route path="/track-order" element={<TrackOrderPage />} />
+                    <Route path="/exchange-request" element={<ExchangeRequestPage />} />
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/products" element={<AdminProducts />} />
+                    <Route path="/admin/orders" element={<AdminOrders />} />
+                    <Route path="/admin/exchanges" element={<AdminExchanges />} />
+                    <Route path="/admin/combos" element={<AdminCombos />} />
+                    <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                    <Route path="/admin/coupons" element={<AdminCoupons />} />
+                  </Routes>
+                </Suspense>
+              </main>
+              
+              <Footer />
+              
+              {/* Floating Components */}
+              <WhatsAppFloat />
+              
+              {/* Sidebar Components */}
+              <CartSidebar />
+              <WishlistSidebar />
+            </div>
+          </Router>
+        </WishlistProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 
