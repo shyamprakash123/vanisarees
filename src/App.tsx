@@ -42,6 +42,8 @@ const AdminExchanges = React.lazy(() => import('./pages/admin/AdminExchanges'));
 const AdminCombos = React.lazy(() => import('./pages/admin/AdminCombos'));
 const AdminAnalytics = React.lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminCoupons = React.lazy(() => import('./pages/admin/AdminCoupons'));
+const AdminCustomers = React.lazy(() => import('./pages/admin/AdminCustomers'));
+const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
 
 function App() {
   return (
@@ -79,6 +81,8 @@ function App() {
                     <Route path="/admin/combos" element={<AdminCombos />} />
                     <Route path="/admin/analytics" element={<AdminAnalytics />} />
                     <Route path="/admin/coupons" element={<AdminCoupons />} />
+                    <Route path="/admin/customers" element={<AdminCustomers />} />
+                    <Route path="/admin/settings" element={<AdminSettings />} />
                   </Routes>
                 </Suspense>
               </main>
