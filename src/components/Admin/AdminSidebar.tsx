@@ -1,16 +1,17 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingBag, 
-  RefreshCw, 
-  BarChart3, 
-  Tag, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  RefreshCw,
+  BarChart3,
+  Tag,
   Users,
   Settings,
   LogOut,
-  Sparkles
+  Sparkles,
+  Home
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -63,17 +64,30 @@ export default function AdminSidebar() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary-50 text-primary-600 border-r-2 border-primary-600'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
+                  ? 'bg-primary-50 text-primary-600 border-r-2 border-primary-600'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="font-medium">{item.label}</span>
               </Link>
             );
           })}
+          <div className="p-4 border-t border-gray-200">
+            <Link
+              to="/">
+              <motion.button
+                className="flex items-center space-x-3 w-full px-4 py-3 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+
+                <Home className="w-5 h-5" />
+                <span className="font-medium">Home</span>
+              </motion.button>
+            </Link>
+          </div>
         </div>
       </nav>
 

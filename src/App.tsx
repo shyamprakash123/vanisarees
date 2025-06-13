@@ -17,6 +17,7 @@ import WishlistSidebar from './components/Wishlist/WishlistSidebar';
 
 // Float Components
 import WhatsAppFloat from './components/WhatsApp/WhatsAppFloat';
+import AdminLayout from './components/Admin/AdminLayout';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -74,15 +75,15 @@ function App() {
                     <Route path="/exchange-request" element={<ExchangeRequestPage />} />
                     
                     {/* Admin Routes */}
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/admin/products" element={<AdminProducts />} />
-                    <Route path="/admin/orders" element={<AdminOrders />} />
-                    <Route path="/admin/exchanges" element={<AdminExchanges />} />
-                    <Route path="/admin/combos" element={<AdminCombos />} />
-                    <Route path="/admin/analytics" element={<AdminAnalytics />} />
-                    <Route path="/admin/coupons" element={<AdminCoupons />} />
-                    <Route path="/admin/customers" element={<AdminCustomers />} />
-                    <Route path="/admin/settings" element={<AdminSettings />} />
+                    <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                    <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
+                    <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
+                    <Route path="/admin/exchanges" element={<AdminLayout><AdminExchanges /></AdminLayout>} />
+                    <Route path="/admin/combos" element={<AdminLayout><AdminCombos /></AdminLayout>} />
+                    <Route path="/admin/analytics" element={<AdminLayout><AdminAnalytics /></AdminLayout>} />
+                    <Route path="/admin/coupons" element={<AdminLayout><AdminCoupons /></AdminLayout>} />
+                    <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
+                    <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
                   </Routes>
                 </Suspense>
               </main>

@@ -11,8 +11,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { user } = useAuth();
 
   // Check if user is admin (you can implement your own admin check logic)
-  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;
-
+  const isAdmin = user?.app_metadata?.role === "admin";
+  
   if (!user) {
     return <Navigate to="/login" replace />;
   }

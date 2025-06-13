@@ -5,6 +5,8 @@ import { useWishlist } from '../../contexts/WishlistContext';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserMenu from './UserMenu';
+import { useAuth } from '../../contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 interface Category {
   id: string;
@@ -13,6 +15,16 @@ interface Category {
 }
 
 export default function Header() {
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const isAdminPath = location.pathname.startsWith('/admin');
+  const isAdmin = user?.app_metadata?.role === "admin";
+
+  if(isAdmin && isAdminPath){
+    return null;
+  }
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

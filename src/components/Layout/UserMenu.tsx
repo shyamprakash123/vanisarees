@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { User, LogOut, Package, Heart, Settings, ChevronDown } from 'lucide-react';
+import { User, LogOut, Package, Heart, Settings, ChevronDown, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -10,6 +10,8 @@ export default function UserMenu() {
   const { user, signOut } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const isAdmin = user?.app_metadata?.role === "admin";
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,6 +85,15 @@ export default function UserMenu() {
             </div>
 
             <div className="py-2">
+              {isAdmin &&
+                <Link
+                to="/admin"
+                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+              >
+                <ShieldCheck className="w-4 h-4 mr-3" />
+                Admin Dashboard
+              </Link>
+              }
               <Link
                 to="/orders"
                 onClick={() => setIsOpen(false)}
