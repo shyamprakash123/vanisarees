@@ -41,9 +41,9 @@ export default function HeroSlider() {
         .select('*')
         .eq('active', true)
         .order('order_index', { ascending: true });
-      
+
       if (error) throw error;
-      
+
       if (data && data.length > 0) {
         setSlides(data);
       } else {
@@ -167,16 +167,18 @@ export default function HeroSlider() {
                   >
                     <div className="absolute inset-0 bg-black/50" />
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute bottom-16 left-0 right-0 flex items-center justify-center z-20">
                     <motion.button
                       onClick={handleVideoPlay}
                       className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-full p-6 text-white hover:bg-white/30 transition-all duration-300"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
+                      aria-label="Play Video"
                     >
                       <Play className="w-12 h-12" />
                     </motion.button>
                   </div>
+
                 </>
               ) : (
                 <div className="w-full h-full relative">
@@ -192,7 +194,7 @@ export default function HeroSlider() {
                   />
                   <button
                     onClick={handleVideoClose}
-                    className="absolute top-4 right-4 bg-black/70 text-white p-2 rounded-full hover:bg-black/90 transition-colors duration-200 z-10"
+                    className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-600 text-red-500 p-2 rounded-full hover:bg-black/90 transition-colors duration-200 z-10"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -216,7 +218,7 @@ export default function HeroSlider() {
             >
               {currentSlideData.title}
             </motion.h1>
-            
+
             <motion.p
               key={`subtitle-${currentSlide}`}
               initial={{ y: 30, opacity: 0 }}
@@ -226,7 +228,7 @@ export default function HeroSlider() {
             >
               {currentSlideData.subtitle}
             </motion.p>
-            
+
             <motion.div
               key={`button-${currentSlide}`}
               initial={{ y: 30, opacity: 0 }}
@@ -234,12 +236,13 @@ export default function HeroSlider() {
               transition={{ delay: 0.6, duration: 0.6 }}
             >
               {currentSlideData.type === 'video' ? (
-                <button
-                  onClick={handleVideoPlay}
-                  className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105"
-                >
-                  {currentSlideData.button_text}
-                </button>
+                // <button
+                //   onClick={handleVideoPlay}
+                //   className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                // >
+                //   {currentSlideData.button_text}
+                // </button>
+                null
               ) : (
                 <a
                   href={currentSlideData.button_link}
@@ -262,7 +265,7 @@ export default function HeroSlider() {
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          
+
           <button
             onClick={goToNext}
             className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-sm border border-white/30 text-white p-3 rounded-full hover:bg-white/30 transition-all duration-300"
@@ -279,11 +282,10 @@ export default function HeroSlider() {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide
-                  ? 'bg-white scale-125'
-                  : 'bg-white/50 hover:bg-white/75'
-              }`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide
+                ? 'bg-white scale-125'
+                : 'bg-white/50 hover:bg-white/75'
+                }`}
             />
           ))}
         </div>

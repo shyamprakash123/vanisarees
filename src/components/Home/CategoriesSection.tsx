@@ -113,14 +113,15 @@ export default function CategoriesSection() {
                   
                   {/* Hover Content */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <motion.button
+                    <motion.a
                       className="bg-white/90 backdrop-blur-sm text-gray-900 px-6 py-3 rounded-full font-semibold flex items-center space-x-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      href={`/category/${category.slug}`}
                     >
                       <span>Explore</span>
                       <ArrowRight className="w-4 h-4" />
-                    </motion.button>
+                    </motion.a>
                   </div>
                 </div>
 

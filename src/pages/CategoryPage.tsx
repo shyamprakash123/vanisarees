@@ -61,10 +61,12 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (slug) {
-      fetchCategory();
-      fetchProducts();
+      (async () => {
+        await fetchCategory().then((data) => fetchProducts(data.id));
+      })();
     }
   }, [slug, sortBy, currentPage]);
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -77,18 +79,19 @@ export default function CategoryPage() {
         .select('*')
         .eq('slug', slug)
         .single();
-      
+
       if (error) throw error;
       setCategory(data);
+      return data;
     } catch (error) {
       console.error('Error fetching category:', error);
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (category_id: string) => {
     try {
       setLoading(true);
-      
+
       let query = supabase
         .from('products')
         .select(`
@@ -97,7 +100,7 @@ export default function CategoryPage() {
             name
           )
         `, { count: 'exact' })
-        .eq('categories.slug', slug);
+        .eq('category_id', category_id);
 
       // Apply sorting
       if (sortBy === 'price_low') {
@@ -114,15 +117,15 @@ export default function CategoryPage() {
       query = query.range(from, to);
 
       const { data, error, count } = await query;
-      
+
       if (error) throw error;
-      
+
       // Add sample video URLs to products for demonstration
       const productsWithVideos = (data || []).map((product, index) => ({
         ...product,
         video_url: sampleVideos[index % sampleVideos.length]
       }));
-      
+
       setProducts(productsWithVideos);
       setTotalProducts(count || 0);
     } catch (error) {
@@ -136,11 +139,11 @@ export default function CategoryPage() {
     if (videoDelayTimeout) {
       clearTimeout(videoDelayTimeout);
     }
-    
+
     const timeout = setTimeout(() => {
       setHoveredProduct(productId);
     }, 2000);
-    
+
     setVideoDelayTimeout(timeout);
   };
 
@@ -246,7 +249,7 @@ export default function CategoryPage() {
               </div>
             </div>
           </div>
-          
+
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="flex-1 max-w-md">
@@ -340,19 +343,17 @@ export default function CategoryPage() {
         </div>
 
         {/* Products Grid */}
-        <div className={`grid gap-6 ${
-          viewMode === 'grid' 
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+        <div className={`grid gap-6 ${viewMode === 'grid'
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
             : 'grid-cols-1'
-        }`}>
+          }`}>
           {filteredProducts.map((product) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ${
-                viewMode === 'list' ? 'flex' : ''
-              }`}
+              className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 ${viewMode === 'list' ? 'flex' : ''
+                }`}
               onMouseEnter={() => handleMouseEnter(product.id)}
               onMouseLeave={handleMouseLeave}
             >
@@ -361,9 +362,8 @@ export default function CategoryPage() {
                 <img
                   src={product.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
                   alt={product.name}
-                  className={`w-full object-cover transition-all duration-700 ${
-                    viewMode === 'list' ? 'h-full' : 'h-64'
-                  } ${hoveredProduct === product.id ? 'opacity-0' : 'opacity-100'}`}
+                  className={`w-full object-cover transition-all duration-700 ${viewMode === 'list' ? 'h-full' : 'h-64'
+                    } ${hoveredProduct === product.id ? 'opacity-0' : 'opacity-100'}`}
                 />
 
                 {/* Video Overlay */}
@@ -386,7 +386,7 @@ export default function CategoryPage() {
                     <Play className="w-4 h-4" />
                   </div>
                 )}
-                
+
                 {product.sale_price && (
                   <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
                     {getDiscountPercentage(product.price, product.sale_price)}% OFF
@@ -395,11 +395,10 @@ export default function CategoryPage() {
 
                 <button
                   onClick={() => handleToggleWishlist(product)}
-                  className={`absolute top-2 right-2 p-2 rounded-full transition-colors duration-200 ${
-                    isInWishlist(product.id)
+                  className={`absolute top-2 right-2 p-2 rounded-full transition-colors duration-200 ${isInWishlist(product.id)
                       ? 'bg-red-500 text-white'
                       : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-500'
-                  }`}
+                    }`}
                 >
                   <Heart className="w-4 h-4" />
                 </button>
@@ -409,7 +408,7 @@ export default function CategoryPage() {
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                   {product.name}
                 </h3>
-                
+
                 {product.categories && (
                   <p className="text-sm text-gray-500 mb-2">{product.categories.name}</p>
                 )}
@@ -418,9 +417,8 @@ export default function CategoryPage() {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-4 h-4 ${
-                        i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                      }`}
+                      className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                        }`}
                     />
                   ))}
                   <span className="text-sm text-gray-500 ml-2">(4.0)</span>
@@ -443,7 +441,7 @@ export default function CategoryPage() {
                       </span>
                     )}
                   </div>
-                  
+
                   {product.stock_quantity === 0 && (
                     <span className="text-sm text-red-500 font-medium">Out of Stock</span>
                   )}
@@ -460,7 +458,7 @@ export default function CategoryPage() {
                     <ShoppingCart className="w-4 h-4" />
                     <span>Add to Cart</span>
                   </motion.button>
-                  
+
                   <motion.a
                     href={`/products/${product.slug}`}
                     className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-semibold transition-colors duration-300 text-center"
@@ -489,7 +487,7 @@ export default function CategoryPage() {
             {[...Array(totalPages)].map((_, index) => {
               const page = index + 1;
               const isCurrentPage = page === currentPage;
-              
+
               // Show first page, last page, current page, and pages around current page
               if (
                 page === 1 ||
@@ -500,11 +498,10 @@ export default function CategoryPage() {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`px-4 py-2 rounded-lg border transition-colors duration-200 ${
-                      isCurrentPage
+                    className={`px-4 py-2 rounded-lg border transition-colors duration-200 ${isCurrentPage
                         ? 'bg-primary-600 text-white border-primary-600'
                         : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>

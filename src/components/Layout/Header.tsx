@@ -31,10 +31,6 @@ export default function Header() {
   const isAdminPath = location.pathname.startsWith('/admin');
   const isAdmin = user?.app_metadata?.role === "admin";
 
-  if(isAdmin && isAdminPath){
-    return null;
-  }
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -118,6 +114,10 @@ export default function Header() {
     setSearchTerm('');
     setSearchResults([]);
   };
+
+  if(isAdmin && isAdminPath){
+    return null;
+  }
 
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${
