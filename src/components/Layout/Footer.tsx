@@ -10,6 +10,7 @@ import {
   Heart,
   Sparkles
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
@@ -38,30 +39,30 @@ export default function Footer() {
               Bringing you the finest collection of Indian ethnic wear with modern convenience.
             </p>
             <div className="flex space-x-4">
-              <a 
-                href="#" 
+              <Link 
+                to="#" 
                 className="p-3 bg-gray-800 hover:bg-gradient-to-r hover:from-primary-500 hover:to-secondary-500 rounded-full transition-all duration-300 transform hover:scale-110"
               >
                 <Facebook className="w-5 h-5" />
-              </a>
-              <a 
-                href="#" 
+              </Link>
+              <Link 
+                to="#" 
                 className="p-3 bg-gray-800 hover:bg-gradient-to-r hover:from-primary-500 hover:to-secondary-500 rounded-full transition-all duration-300 transform hover:scale-110"
               >
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a 
-                href="#" 
+              </Link>
+              <Link 
+                to="#" 
                 className="p-3 bg-gray-800 hover:bg-gradient-to-r hover:from-primary-500 hover:to-secondary-500 rounded-full transition-all duration-300 transform hover:scale-110"
               >
                 <Twitter className="w-5 h-5" />
-              </a>
-              <a 
-                href="#" 
+              </Link>
+              <Link 
+                to="#" 
                 className="p-3 bg-gray-800 hover:bg-gradient-to-r hover:from-primary-500 hover:to-secondary-500 rounded-full transition-all duration-300 transform hover:scale-110"
               >
                 <Youtube className="w-5 h-5" />
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -70,20 +71,20 @@ export default function Footer() {
             <h4 className="text-lg font-bold mb-6 text-white">Quick Links</h4>
             <ul className="space-y-3">
               {[
-                { name: 'About Us', href: '/about' },
-                { name: 'Categories', href: '/categories' },
-                { name: 'Combo Offers', href: '/combos' },
-                { name: 'Track Order', href: '/track-order' },
-                { name: 'Exchange Policy', href: '/exchange' }
+                { name: 'About Us', to: '/about' },
+                { name: 'Categories', to: '/categories' },
+                { name: 'Combo Offers', to: '/combos' },
+                { name: 'Track Order', to: '/track-order' },
+                { name: 'FAQ', to: '/faq' },
               ].map((link) => (
                 <li key={link.name}>
-                  <a 
-                    href={link.href} 
+                  <Link 
+                    to={link.to} 
                     className="text-gray-300 hover:text-primary-400 transition-all duration-200 flex items-center group"
                   >
                     <span className="w-2 h-2 bg-primary-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></span>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -94,20 +95,20 @@ export default function Footer() {
             <h4 className="text-lg font-bold mb-6 text-white">Customer Service</h4>
             <ul className="space-y-3">
               {[
-                { name: 'Contact Us', href: '/contact' },
-                { name: 'FAQ', href: '/faq' },
-                { name: 'Shipping Info', href: '/shipping' },
-                { name: 'Returns & Refunds', href: '/returns' },
-                { name: 'Size Guide', href: '/size-guide' }
+                { name: 'Contact Us', to: '/contact' },
+                
+                { name: 'Shipping Policy', to: '/shipping-policy' },
+                { name: 'Returns & Refunds', to: '/returns-refunds' },
+                { name: 'Exchange Policy', to: '/exchange-policy' }
               ].map((link) => (
                 <li key={link.name}>
-                  <a 
-                    href={link.href} 
+                  <Link 
+                    to={link.to} 
                     className="text-gray-300 hover:text-primary-400 transition-all duration-200 flex items-center group"
                   >
                     <span className="w-2 h-2 bg-primary-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></span>
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -136,8 +137,8 @@ export default function Footer() {
 
             {/* WhatsApp Support */}
             <div className="mt-6">
-              <a
-                href="https://wa.me/919876543210"
+              <Link
+                to="https://wa.me/919876543210"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
@@ -146,7 +147,7 @@ export default function Footer() {
                   <path d="M12.017 2.011C6.498 2.011 2.011 6.498 2.011 12.017c0 1.756.455 3.456 1.318 4.952L2 22l5.153-1.351a9.96 9.96 0 004.864 1.368c5.518 0 9.983-4.487 9.983-10.006C21.99 6.493 17.535 2.011 12.017 2.011zm5.975 14.152c-.274.77-.79 1.42-1.44 1.853-.65.433-1.392.65-2.183.65-.574 0-1.243-.13-2.005-.39-.762-.26-1.556-.65-2.378-1.17-.822-.52-1.596-1.147-2.322-1.883s-1.363-1.5-1.883-2.322c-.52-.822-.91-1.616-1.17-2.378-.26-.762-.39-1.431-.39-2.005 0-.791.217-1.533.65-2.183.433-.65 1.083-1.166 1.853-1.44.308-.11.64-.165.995-.165.26 0 .52.055.78.165.26.11.455.242.585.396l1.495 2.38c.13.208.195.416.195.624 0 .208-.055.396-.165.564-.11.168-.273.351-.488.549l-.793.793c-.11.11-.165.26-.165.451 0 .143.039.299.117.468.078.169.208.364.39.585.764 1.001 1.664 1.82 2.7 2.457.221.143.416.247.585.312.169.065.325.098.468.098.191 0 .341-.055.451-.165l.793-.793c.198-.215.381-.378.549-.488.168-.11.356-.165.564-.165.208 0 .416.065.624.195l2.38 1.495c.154.13.286.325.396.585.11.26.165.52.165.78 0 .355-.055.687-.165.995z"/>
                 </svg>
                 <span className="text-sm font-semibold">WhatsApp Support</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -155,28 +156,29 @@ export default function Footer() {
         <div className="border-t border-gray-700 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © 2024 VaniSarees. All rights reserved.
+              © 2025 VaniSarees. All rights reserved.
             </p>
             
             <div className="flex items-center space-x-1 text-gray-400 text-sm mb-4 md:mb-0">
-              <span>Made with</span>
+              <span>Crafted with</span>
               <Heart className="w-4 h-4 text-red-500" />
-              <span>for traditional fashion lovers</span>
+              <span>by </span>
+              <Link to="https://dockpoint.in" target='_blank' className='text-white font-semibold hover:text-blue-300'>Dock Point</Link>
             </div>
             
             <div className="flex space-x-6">
-              <a 
-                href="/privacy" 
+              <Link 
+                to="/privacy-policy" 
                 className="text-gray-400 hover:text-primary-400 text-sm transition-colors duration-200"
               >
                 Privacy Policy
-              </a>
-              <a 
-                href="/terms" 
+              </Link>
+              <Link 
+                to="/terms-of-service" 
                 className="text-gray-400 hover:text-primary-400 text-sm transition-colors duration-200"
               >
                 Terms of Service
-              </a>
+              </Link>
             </div>
           </div>
         </div>

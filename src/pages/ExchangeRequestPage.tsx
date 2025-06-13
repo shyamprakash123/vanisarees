@@ -3,6 +3,7 @@ import { Upload, Video, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import imageCompression from 'browser-image-compression';
+import { Link } from 'react-router-dom';
 
 export default function ExchangeRequestPage() {
   const [formData, setFormData] = useState({
@@ -105,12 +106,12 @@ export default function ExchangeRequestPage() {
                 Your exchange request has been submitted successfully. Our team will review it and get back to you within 24-48 hours.
               </p>
               <div className="space-y-4">
-                <a
-                  href="/"
+                <Link
+                  to="/"
                   className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300"
                 >
                   Back to Home
-                </a>
+                </Link>
                 <p className="text-sm text-gray-500">
                   You can track the status of your exchange request by contacting our support team.
                 </p>
@@ -129,7 +130,7 @@ export default function ExchangeRequestPage() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Exchange Request</h1>
             <p className="text-gray-600">
-              Submit a request to exchange your product. Please provide video proof of the issue.
+              Submit Link request to exchange your product. Please provide video proof of the issue.
             </p>
           </div>
 
@@ -203,7 +204,7 @@ export default function ExchangeRequestPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   required
                 >
-                  <option value="">Select a reason</option>
+                  <option value="">Select Link reason</option>
                   <option value="damaged">Product Damaged</option>
                   <option value="defective">Product Defective</option>
                   <option value="wrong-item">Wrong Item Received</option>
@@ -272,7 +273,7 @@ export default function ExchangeRequestPage() {
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Please upload a video showing the unboxing or the issue with the product. This helps us process your request faster.
+                  Please upload Link video showing the unboxing or the issue with the product. This helps us process your request faster.
                 </p>
               </div>
 

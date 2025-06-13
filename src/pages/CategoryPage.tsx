@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Search, Filter, Grid, List, Heart, ShoppingCart, Star, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -218,12 +218,12 @@ export default function CategoryPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Category Not Found</h1>
           <p className="text-gray-600 mb-8">The category you're looking for doesn't exist.</p>
-          <a
-            href="/products"
+          <Link
+            to="/products"
             className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
           >
             Browse All Products
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -344,8 +344,8 @@ export default function CategoryPage() {
 
         {/* Products Grid */}
         <div className={`grid gap-6 ${viewMode === 'grid'
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            : 'grid-cols-1'
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+          : 'grid-cols-1'
           }`}>
           {filteredProducts.map((product) => (
             <motion.div
@@ -396,8 +396,8 @@ export default function CategoryPage() {
                 <button
                   onClick={() => handleToggleWishlist(product)}
                   className={`absolute top-2 right-2 p-2 rounded-full transition-colors duration-200 ${isInWishlist(product.id)
-                      ? 'bg-red-500 text-white'
-                      : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-500'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-white text-gray-600 hover:bg-red-50 hover:text-red-500'
                     }`}
                 >
                   <Heart className="w-4 h-4" />
@@ -459,14 +459,15 @@ export default function CategoryPage() {
                     <span>Add to Cart</span>
                   </motion.button>
 
-                  <motion.a
-                    href={`/products/${product.slug}`}
+                  <motion.div
                     className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-semibold transition-colors duration-300 text-center"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    View Details
-                  </motion.a>
+                    <Link to={`/products/${product.slug}`}>
+                      View Details
+                    </Link>
+                  </motion.div>
                 </div>
               </div>
             </motion.div>
@@ -499,8 +500,8 @@ export default function CategoryPage() {
                     key={page}
                     onClick={() => handlePageChange(page)}
                     className={`px-4 py-2 rounded-lg border transition-colors duration-200 ${isCurrentPage
-                        ? 'bg-primary-600 text-white border-primary-600'
-                        : 'border-gray-300 hover:bg-gray-50'
+                      ? 'bg-primary-600 text-white border-primary-600'
+                      : 'border-gray-300 hover:bg-gray-50'
                       }`}
                   >
                     {page}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 
 interface AdminLayoutProps {
@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   // Check if user is admin (you can implement your own admin check logic)
   const isAdmin = user?.app_metadata?.role === "admin";
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -23,12 +23,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-8">You don't have permission to access the admin panel.</p>
-          <a
-            href="/"
+          <Link
+            to="/"
             className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
           >
             Go Home
-          </a>
+          </Link>
         </div>
       </div>
     );

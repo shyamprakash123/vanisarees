@@ -13,13 +13,15 @@ import {
   Sparkles,
   Home,
   Megaphone,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FolderOpen
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+  { icon: FolderOpen, label: 'Categories', path: '/admin/categories' },
   { icon: Package, label: 'Products', path: '/admin/products' },
   { icon: ShoppingBag, label: 'Orders', path: '/admin/orders' },
   { icon: RefreshCw, label: 'Exchanges', path: '/admin/exchanges' },

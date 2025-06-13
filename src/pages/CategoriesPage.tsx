@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 
 interface Category {
@@ -12,7 +12,7 @@ interface Category {
   image_url: string | null;
 }
 
-export default function CategoriesSection() {
+export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,8 +25,7 @@ export default function CategoriesSection() {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .order('name')
-        .limit(6);
+        .order('name');
 
       if (error) throw error;
       setCategories(data || []);
@@ -157,26 +156,6 @@ export default function CategoriesSection() {
             </motion.div>
           ))}
         </div>
-
-        {/* Call to Action */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="flex text-center mt-16 w-full justify-center"
-        >
-          <motion.div
-            className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl w-fit"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Link to="/categories" className='inline-flex items-center w-fit'>
-              <span>View All Categories</span>
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Link>
-          </motion.div>
-        </motion.div>
       </div>
     </section>
   );

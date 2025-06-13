@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import toast from 'react-hot-toast';
+import ImageUpload from '../../components/UI/ImageUpload';
 
 interface Product {
   id: string;
@@ -64,7 +65,7 @@ export default function AdminProducts() {
           )
         `)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
@@ -81,7 +82,7 @@ export default function AdminProducts() {
         .from('categories')
         .select('*')
         .order('name');
-      
+
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
@@ -98,33 +99,31 @@ export default function AdminProducts() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         [name]: name === 'price' || name === 'stock_quantity' ? parseFloat(value) || 0 : value,
         ...(name === 'name' && { slug: generateSlug(value) })
       }));
     }
   };
 
-  const handleImageAdd = () => {
-    const imageUrl = prompt('Enter image URL:');
-    if (imageUrl) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageUrl]
-      }));
-    }
-  };
-
-  const handleImageRemove = (index: number) => {
+  const handleImageUpload = (urls: string[]) => {
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: [...prev.images, ...urls]
+    }));
+    toast.success(`${urls.length} image(s) uploaded successfully!`);
+  };
+
+  const handleImageRemove = (url: string) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter(img => img !== url)
     }));
   };
 
@@ -147,7 +146,7 @@ export default function AdminProducts() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const productData = {
         name: formData.name,
@@ -167,14 +166,14 @@ export default function AdminProducts() {
           .from('products')
           .update(productData)
           .eq('id', editingProduct.id);
-        
+
         if (error) throw error;
         toast.success('Product updated successfully');
       } else {
         const { error } = await supabase
           .from('products')
           .insert(productData);
-        
+
         if (error) throw error;
         toast.success('Product added successfully');
       }
@@ -212,7 +211,7 @@ export default function AdminProducts() {
         .from('products')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success('Product deleted successfully');
       fetchProducts();
@@ -364,10 +363,9 @@ export default function AdminProducts() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm ${
-                        product.stock_quantity > 10 ? 'text-green-600' :
-                        product.stock_quantity > 0 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
+                      <span className={`text-sm ${product.stock_quantity > 10 ? 'text-green-600' :
+                          product.stock_quantity > 0 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
                         {product.stock_quantity} units
                       </span>
                     </td>
@@ -378,11 +376,10 @@ export default function AdminProducts() {
                             Featured
                           </span>
                         )}
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          product.stock_quantity > 0 
-                            ? 'bg-green-100 text-green-800' 
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.stock_quantity > 0
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}>
+                          }`}>
                           {product.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
                         </span>
                       </div>
@@ -565,40 +562,16 @@ export default function AdminProducts() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Product Images
                     </label>
-                    <div className="space-y-2">
-                      {formData.images.map((image, index) => (
-                        <div key={index} className="flex items-center space-x-2">
-                          <img src={image} alt={`Product ${index + 1}`} className="w-16 h-16 object-cover rounded" />
-                          <input
-                            type="url"
-                            value={image}
-                            onChange={(e) => {
-                              const newImages = [...formData.images];
-                              newImages[index] = e.target.value;
-                              setFormData(prev => ({ ...prev, images: newImages }));
-                            }}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleImageRemove(index)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={handleImageAdd}
-                        className="flex items-center space-x-2 text-primary-600 hover:text-primary-700"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>Add Image</span>
-                      </button>
-                    </div>
-                  </div>
 
+                  </div>
+                  <ImageUpload
+                    onUpload={handleImageUpload}
+                    onRemove={handleImageRemove}
+                    existingImages={formData.images}
+                    maxImages={10}
+                    folder="products"
+                    multiple={true}
+                  />
                   <div className="flex items-center">
                     <input
                       type="checkbox"

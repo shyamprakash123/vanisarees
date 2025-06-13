@@ -3,6 +3,7 @@ import { X, Heart, ShoppingCart, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useCart } from '../../contexts/CartContext';
+import { Link } from 'react-router-dom';
 
 export default function WishlistSidebar() {
   const { state, removeItem, clearWishlist, toggleWishlist } = useWishlist();
@@ -13,7 +14,8 @@ export default function WishlistSidebar() {
       id: item.id,
       name: item.name,
       price: item.price,
-      image: item.image
+      image: item.image,
+      slug: item.slug
     });
     removeItem(item.id);
   };
@@ -84,9 +86,11 @@ export default function WishlistSidebar() {
                         />
                         
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                          <Link to={`/products/${item.slug}`} 
+                          onClick={toggleWishlist}
+                          className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2 hover:text-primary-500">
                             {item.name}
-                          </h3>
+                          </Link>
                           <p className="text-primary-600 font-bold">
                             ₹{item.price.toLocaleString()}
                           </p>

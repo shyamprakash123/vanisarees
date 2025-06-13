@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -442,14 +443,15 @@ export default function ProductsPage() {
                     <span>Add to Cart</span>
                   </motion.button>
                   
-                  <motion.a
-                    href={`/products/${product.slug}`}
+                  <motion.div
                     className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-semibold transition-colors duration-300 text-center"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
+                    <Link to={`/products/${product.slug}`}>
                     View Details
-                  </motion.a>
+                    </Link>
+                  </motion.div>
                 </div>
               </div>
             </motion.div>

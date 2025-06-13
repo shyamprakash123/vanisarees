@@ -48,13 +48,13 @@ export default function FeaturedProducts() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       // Add sample video URLs to products for demonstration
       const productsWithVideos = (data || []).map((product, index) => ({
         ...product,
         video_url: sampleVideos[index % sampleVideos.length]
       }));
-      
+
       setProducts(productsWithVideos);
     } catch (error) {
       console.error('Error fetching featured products:', error);
@@ -68,7 +68,8 @@ export default function FeaturedProducts() {
       id: product.id,
       name: product.name,
       price: product.sale_price || product.price,
-      image: product.images[0] || '/placeholder-saree.jpg'
+      image: product.images[0] || '/placeholder-saree.jpg',
+      slug: product.slug
     });
   };
 
@@ -80,7 +81,8 @@ export default function FeaturedProducts() {
         id: product.id,
         name: product.name,
         price: product.sale_price || product.price,
-        image: product.images[0] || '/placeholder-saree.jpg'
+        image: product.images[0] || '/placeholder-saree.jpg',
+        slug: product.slug
       });
     }
   };
@@ -90,12 +92,12 @@ export default function FeaturedProducts() {
     if (videoDelayTimeout) {
       clearTimeout(videoDelayTimeout);
     }
-    
+
     // Set a 2-second delay before showing video
     const timeout = setTimeout(() => {
       setHoveredProduct(productId);
     }, 2000);
-    
+
     setVideoDelayTimeout(timeout);
   };
 
@@ -175,7 +177,10 @@ export default function FeaturedProducts() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               viewport={{ once: true }}
               className="group relative"
-              onMouseEnter={() => handleMouseEnter(product.id)}
+              onMouseEnter={() => {
+                if(product.video_url)
+                handleMouseEnter(product.id)
+              }}
               onMouseLeave={handleMouseLeave}
             >
               <Link to={`/products/${product.slug}`} className="block bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
@@ -184,9 +189,8 @@ export default function FeaturedProducts() {
                   <img
                     src={product.images[0] || 'https://images.pexels.com/photos/8553882/pexels-photo-8553882.jpeg?auto=compress&cs=tinysrgb&w=600'}
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-all duration-700 ${
-                      hoveredProduct === product.id ? 'opacity-0 scale-110' : 'opacity-100 group-hover:scale-110'
-                    }`}
+                    className={`w-full h-full object-cover transition-all duration-700 ${hoveredProduct === product.id ? 'opacity-0 scale-110' : 'opacity-100 group-hover:scale-110'
+                      }`}
                   />
 
                   {/* Video Overlay */}
@@ -302,17 +306,18 @@ export default function FeaturedProducts() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mt-16"
+          className="flex text-center mt-16 w-full justify-center"
         >
-          <motion.a
-            href="/products"
-            className="inline-flex items-center bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          <motion.div
+            className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl w-fit"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span>View All Products</span>
-            <Sparkles className="w-5 h-5 ml-2" />
-          </motion.a>
+            <Link to="/products" className='inline-flex items-center'>
+              <span>View All Products</span>
+              <Sparkles className="w-5 h-5 ml-2" />
+            </Link>
+          </motion.div>
         </motion.div>
       </div>
     </section>

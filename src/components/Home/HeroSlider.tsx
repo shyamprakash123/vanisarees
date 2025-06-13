@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { Link } from 'react-router-dom';
 
 interface SlideContent {
   id: string;
@@ -244,12 +245,12 @@ export default function HeroSlider() {
                 // </button>
                 null
               ) : (
-                <a
-                  href={currentSlideData.button_link}
+                <Link
+                  to={currentSlideData.button_link}
                   className="inline-block bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all duration-300 transform hover:scale-105"
                 >
                   {currentSlideData.button_text}
-                </a>
+                </Link>
               )}
             </motion.div>
           </div>

@@ -199,9 +199,9 @@ export default function RegisterPage() {
             <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" required />
             <span className="ml-2 text-sm text-gray-600">
               I agree to the{' '}
-              <a href="/terms" className="text-primary-600 hover:text-primary-700">Terms of Service</a>
+              <Link to="/terms" className="text-primary-600 hover:text-primary-700">Terms of Service</Link>
               {' '}and{' '}
-              <a href="/privacy" className="text-primary-600 hover:text-primary-700">Privacy Policy</a>
+              <Link to="/privacy" className="text-primary-600 hover:text-primary-700">Privacy Policy</Link>
             </span>
           </div>
 

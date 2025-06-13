@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 interface Coupon {
@@ -192,12 +192,12 @@ export default function CheckoutPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
           <p className="text-gray-600 mb-8">Add some beautiful sarees to your cart first.</p>
-          <a
-            href="/products"
+          <Link
+            to="/products"
             className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300"
           >
             Continue Shopping
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -17,8 +17,19 @@ import CartSidebar from './components/Cart/CartSidebar';
 import WishlistSidebar from './components/Wishlist/WishlistSidebar';
 
 // Float Components
-import WhatsAppFloat from './components/WhatsApp/WhatsAppFloat';
 import AdminLayout from './components/Admin/AdminLayout';
+import AboutPage from './pages/AboutPage';
+import ContactPage from './pages/ContactPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfService';
+import ExchangePolicyPage from './pages/ExchangePolicy';
+import ShippingPolicyPage from './pages/ShippingPolicy';
+import ReturnRefundPolicyPage from './pages/ReturnsAndRefunds';
+import ScrollToTop from './components/Layout/ScrollToTop';
+import FAQPage from './pages/FAQ';
+import CombosPage from './pages/CombosPage';
+import CategoriesPage from './pages/CategoriesPage';
+import ComboDetailPage from './pages/ComboDetailPage';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -39,6 +50,7 @@ const ExchangeRequestPage = React.lazy(() => import('./pages/ExchangeRequestPage
 
 // Admin Pages
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminCategories = React.lazy(() => import('./pages/admin/AdminCategories'));
 const AdminProducts = React.lazy(() => import('./pages/admin/AdminProducts'));
 const AdminOrders = React.lazy(() => import('./pages/admin/AdminOrders'));
 const AdminExchanges = React.lazy(() => import('./pages/admin/AdminExchanges'));
@@ -60,6 +72,7 @@ function App() {
               <div className="min-h-screen bg-white">
                 <AnnouncementBar />
                 <Header />
+                <ScrollToTop />
                 
                 <main>
                   <Suspense fallback={<LoadingSpinner />}>
@@ -79,9 +92,14 @@ function App() {
                       <Route path="/orders" element={<OrdersPage />} />
                       <Route path="/track-order" element={<TrackOrderPage />} />
                       <Route path="/exchange-request" element={<ExchangeRequestPage />} />
+                      <Route path="/combos" element={<CombosPage />} />
+                      <Route path="/categories" element={<CategoriesPage />} />
+                      <Route path="/combos/:id" element={<ComboDetailPage />} />
+
                       
                       {/* Admin Routes */}
                       <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+                      <Route path="/admin/categories" element={<AdminLayout><AdminCategories /></AdminLayout>} />
                       <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
                       <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
                       <Route path="/admin/exchanges" element={<AdminLayout><AdminExchanges /></AdminLayout>} />
@@ -92,14 +110,21 @@ function App() {
                       <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
                       <Route path="/admin/announcements" element={<AdminLayout><AdminAnnouncements /></AdminLayout>} />
                       <Route path="/admin/hero-slider" element={<AdminLayout><AdminHeroSlider /></AdminLayout>} />
+
+                      {/* About & Policies */}
+                      <Route path="/about" element={<AboutPage />} />
+                      <Route path="/contact" element={<ContactPage />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                      <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                      <Route path="/exchange-policy" element={<ExchangePolicyPage />} />
+                      <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+                      <Route path="/returns-refunds" element={<ReturnRefundPolicyPage />} />
+                      <Route path="/faq" element={<FAQPage />} />
                     </Routes>
                   </Suspense>
                 </main>
                 
                 <Footer />
-                
-                {/* Floating Components */}
-                <WhatsAppFloat />
                 
                 {/* Sidebar Components */}
                 <CartSidebar />

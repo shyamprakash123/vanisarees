@@ -143,23 +143,23 @@ export default function OrderConfirmationPage() {
                 Track Order
               </Link>
               
-              <a
-                href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER}?text=Hi, I have a question about my order ${order.id}`}
+              <Link
+                to={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER}?text=Hi, I have Link question about my order ${order.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>WhatsApp</span>
-              </a>
+              </Link>
               
-              <a
-                href={`mailto:${import.meta.env.VITE_ADMIN_EMAIL}?subject=Order Support - ${order.id}`}
+              <Link
+                to={`mailto:${import.meta.env.VITE_ADMIN_EMAIL}?subject=Order Support - ${order.id}`}
                 className="bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
               >
                 <Mail className="w-4 h-4" />
                 <span>Email</span>
-              </a>
+              </Link>
             </div>
 
             <div className="text-center">

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import toast from 'react-hot-toast';
+import ImageUpload from '../../components/UI/ImageUpload';
 
 interface HeroSlide {
   id: string;
@@ -45,7 +46,7 @@ export default function AdminHeroSlider() {
         .from('hero_slides')
         .select('*')
         .order('order_index', { ascending: true });
-      
+
       if (error) throw error;
       setSlides(data || []);
     } catch (error) {
@@ -71,7 +72,7 @@ export default function AdminHeroSlider() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -99,7 +100,7 @@ export default function AdminHeroSlider() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const slideData = {
         title: formData.title,
@@ -117,14 +118,14 @@ export default function AdminHeroSlider() {
           .from('hero_slides')
           .update(slideData)
           .eq('id', editingSlide.id);
-        
+
         if (error) throw error;
         toast.success('Slide updated successfully');
       } else {
         const { error } = await supabase
           .from('hero_slides')
           .insert(slideData);
-        
+
         if (error) throw error;
         toast.success('Slide created successfully');
       }
@@ -160,7 +161,7 @@ export default function AdminHeroSlider() {
         .from('hero_slides')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success('Slide deleted successfully');
       fetchSlides();
@@ -176,7 +177,7 @@ export default function AdminHeroSlider() {
         .from('hero_slides')
         .update({ active: !active })
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success(`Slide ${!active ? 'activated' : 'deactivated'} successfully`);
       fetchSlides();
@@ -184,6 +185,23 @@ export default function AdminHeroSlider() {
       console.error('Error updating slide status:', error);
       toast.error('Failed to update slide status');
     }
+  };
+
+  const handleImageUpload = (urls: string[]) => {
+    if (urls.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        url: urls[0] // Use the first uploaded image
+      }));
+      toast.success('Combo image uploaded successfully!');
+    }
+  };
+
+  const handleImageRemove = (url: string) => {
+    setFormData(prev => ({
+      ...prev,
+      url: ''
+    }));
   };
 
   const filteredSlides = slides.filter(slide =>
@@ -257,7 +275,7 @@ export default function AdminHeroSlider() {
                     <span className="text-white ml-2">Video Slide</span>
                   </div>
                 )}
-                
+
                 <div className="absolute top-2 left-2 flex items-center space-x-2">
                   {slide.type === 'image' ? (
                     <ImageIcon className="w-4 h-4 text-white bg-black/50 p-1 rounded" />
@@ -268,10 +286,9 @@ export default function AdminHeroSlider() {
                     Order: {slide.order_index}
                   </span>
                 </div>
-                
-                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium ${
-                  slide.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
+
+                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium ${slide.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
                   {slide.active ? 'Active' : 'Inactive'}
                 </div>
               </div>
@@ -291,11 +308,10 @@ export default function AdminHeroSlider() {
                   </button>
                   <button
                     onClick={() => toggleSlideStatus(slide.id, slide.active)}
-                    className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors duration-300 ${
-                      slide.active
-                        ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
+                    className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors duration-300 ${slide.active
+                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                      : 'bg-green-600 hover:bg-green-700 text-white'
+                      }`}
                   >
                     {slide.active ? <EyeOff className="w-4 h-4 inline mr-1" /> : <Eye className="w-4 h-4 inline mr-1" />}
                     {slide.active ? 'Hide' : 'Show'}
@@ -390,15 +406,26 @@ export default function AdminHeroSlider() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       {formData.type === 'image' ? 'Image URL' : 'Video URL'} *
                     </label>
-                    <input
-                      type="url"
-                      name="url"
-                      value={formData.url}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder={formData.type === 'image' ? 'https://example.com/image.jpg' : 'https://youtube.com/embed/...'}
-                      required
-                    />
+                    {formData.type === 'image' ?
+                      <ImageUpload
+                        onUpload={handleImageUpload}
+                        onRemove={handleImageRemove}
+                        existingImages={formData.url ? [formData.url] : []}
+                        maxImages={1}
+                        folder="hero"
+                        multiple={false}
+                      /> :
+                      <input
+                        type="url"
+                        name="url"
+                        value={formData.url}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder={formData.type === 'image' ? 'https://example.com/image.jpg' : 'https://youtube.com/embed/...'}
+                        required
+                      />
+                    }
+
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

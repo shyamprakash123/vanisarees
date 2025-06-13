@@ -2,7 +2,7 @@ import React from 'react';
 import { X, Plus, Minus, ShoppingBag, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function CartSidebar() {
   const { state, removeItem, updateQuantity, clearCart, toggleCart } = useCart();
@@ -87,9 +87,12 @@ export default function CartSidebar() {
                         />
                         
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
+                          <Link to={`/products/${item.slug}`}
+                           className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2 hover:text-primary-500"
+                           onClick={toggleCart}
+                           >
                             {item.name}
-                          </h3>
+                          </Link>
                           <p className="text-primary-600 font-bold">
                             ₹{item.price.toLocaleString()}
                           </p>

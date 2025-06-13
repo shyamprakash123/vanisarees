@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import toast from 'react-hot-toast';
+import ImageUpload from '../../components/UI/ImageUpload';
 
 interface Combo {
   id: string;
@@ -56,7 +57,7 @@ export default function AdminCombos() {
         .from('combos')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
 
       // Fetch product details for each combo
@@ -66,9 +67,9 @@ export default function AdminCombos() {
             .from('products')
             .select('id, name, price, images')
             .in('id', combo.product_ids);
-          
+
           if (productsError) throw productsError;
-          
+
           return { ...combo, products };
         })
       );
@@ -88,7 +89,7 @@ export default function AdminCombos() {
         .from('products')
         .select('id, name, price, images')
         .order('name');
-      
+
       if (error) throw error;
       setProducts(data || []);
     } catch (error) {
@@ -98,13 +99,13 @@ export default function AdminCombos() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         [name]: name === 'combo_price' ? parseFloat(value) || 0 : value
       }));
     }
@@ -134,7 +135,7 @@ export default function AdminCombos() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.product_ids.length < 2) {
       toast.error('Please select at least 2 products for the combo');
       return;
@@ -155,14 +156,14 @@ export default function AdminCombos() {
           .from('combos')
           .update(comboData)
           .eq('id', editingCombo.id);
-        
+
         if (error) throw error;
         toast.success('Combo updated successfully');
       } else {
         const { error } = await supabase
           .from('combos')
           .insert(comboData);
-        
+
         if (error) throw error;
         toast.success('Combo created successfully');
       }
@@ -173,6 +174,24 @@ export default function AdminCombos() {
       console.error('Error saving combo:', error);
       toast.error(error.message || 'Failed to save combo');
     }
+  };
+
+
+  const handleImageUpload = (urls: string[]) => {
+    if (urls.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        image_url: urls[0] // Use the first uploaded image
+      }));
+      toast.success('Combo image uploaded successfully!');
+    }
+  };
+
+  const handleImageRemove = (url: string) => {
+    setFormData(prev => ({
+      ...prev,
+      image_url: ''
+    }));
   };
 
   const handleEdit = (combo: Combo) => {
@@ -196,7 +215,7 @@ export default function AdminCombos() {
         .from('combos')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success('Combo deleted successfully');
       fetchCombos();
@@ -212,7 +231,7 @@ export default function AdminCombos() {
         .from('combos')
         .update({ active: !active })
         .eq('id', id);
-      
+
       if (error) throw error;
       toast.success(`Combo ${!active ? 'activated' : 'deactivated'} successfully`);
       fetchCombos();
@@ -300,16 +319,15 @@ export default function AdminCombos() {
                     alt={combo.name}
                     className="w-full h-48 object-cover"
                   />
-                  
+
                   {savingsPercentage > 0 && (
                     <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-bold">
                       Save {savingsPercentage}%
                     </div>
                   )}
-                  
-                  <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm font-medium ${
-                    combo.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
+
+                  <div className={`absolute top-2 right-2 px-2 py-1 rounded text-sm font-medium ${combo.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
                     {combo.active ? 'Active' : 'Inactive'}
                   </div>
                 </div>
@@ -364,11 +382,10 @@ export default function AdminCombos() {
                       </button>
                       <button
                         onClick={() => toggleComboStatus(combo.id, combo.active)}
-                        className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors duration-300 ${
-                          combo.active
+                        className={`flex-1 py-2 px-3 rounded text-sm font-medium transition-colors duration-300 ${combo.active
                             ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                             : 'bg-green-600 hover:bg-green-700 text-white'
-                        }`}
+                          }`}
                       >
                         {combo.active ? 'Deactivate' : 'Activate'}
                       </button>
@@ -462,17 +479,18 @@ export default function AdminCombos() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Combo Image URL
+                      Combo Image
                     </label>
-                    <input
-                      type="url"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
 
+                  </div>
+                  <ImageUpload
+                    onUpload={handleImageUpload}
+                    onRemove={handleImageRemove}
+                    existingImages={formData.image_url ? [formData.image_url] : []}
+                    maxImages={1}
+                    folder="combos"
+                    multiple={false}
+                  />
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Select Products * (minimum 2)

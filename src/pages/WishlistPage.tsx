@@ -14,7 +14,8 @@ export default function WishlistPage() {
       id: item.id,
       name: item.name,
       price: item.price,
-      image: item.image
+      image: item.image,
+      slug: item.slug
     });
     removeItem(item.id);
   };
@@ -82,9 +83,10 @@ export default function WishlistPage() {
               </div>
 
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                <Link to={`/products/${item.slug}`}
+                  className="font-semibold text-gray-900 mb-2 line-clamp-2  hover:text-primary-500">
                   {item.name}
-                </h3>
+                </Link>
                 <p className="text-lg font-bold text-primary-600 mb-4">
                   ₹{item.price.toLocaleString()}
                 </p>

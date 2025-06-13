@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 interface ExchangeRequest {
   id: string;
@@ -207,14 +208,14 @@ export default function AdminExchanges() {
                           <Eye className="w-4 h-4" />
                         </button>
                         {exchange.video_url && (
-                          <a
-                            href={exchange.video_url}
+                          <Link
+                            to={exchange.video_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-900"
                           >
                             <Video className="w-4 h-4" />
-                          </a>
+                          </Link>
                         )}
                       </div>
                     </td>

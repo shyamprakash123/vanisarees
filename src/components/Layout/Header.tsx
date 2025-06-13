@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserMenu from './UserMenu';
 import { useAuth } from '../../contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface Category {
   id: string;
@@ -44,11 +44,11 @@ export default function Header() {
 
   useEffect(() => {
     fetchCategories();
-    
+
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -71,7 +71,7 @@ export default function Header() {
         .from('categories')
         .select('id, name, slug')
         .order('name');
-      
+
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
@@ -87,7 +87,7 @@ export default function Header() {
         .select('id, name, slug, price, sale_price, images')
         .ilike('name', `%${query}%`)
         .limit(5);
-      
+
       if (error) throw error;
       setSearchResults(data || []);
     } catch (error) {
@@ -115,21 +115,20 @@ export default function Header() {
     setSearchResults([]);
   };
 
-  if(isAdmin && isAdminPath){
+  if (isAdmin && isAdminPath) {
     return null;
   }
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${
-      scrolled 
-        ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100' 
-        : 'bg-white shadow-md'
-    }`}>
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+      ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
+      : 'bg-white shadow-md'
+      }`}>
       {/* Top Navigation */}
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.div 
+          <motion.div
             className="flex items-center space-x-3"
             whileHover={{ scale: 1.02 }}
           >
@@ -146,18 +145,19 @@ export default function Header() {
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-8">
-            <motion.a 
-              href="/" 
+            <motion.div
               className="text-gray-700 hover:text-primary-600 transition-all duration-200 font-medium relative group"
               whileHover={{ y: -2 }}
             >
-              Home
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
-            </motion.a>
-            
+              <Link to="/">
+                Home
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
+              </Link>
+            </motion.div>
+
             {/* Categories Dropdown */}
             <div className="relative">
-              <motion.button 
+              <motion.button
                 className="text-gray-700 hover:text-primary-600 transition-all duration-200 font-medium flex items-center space-x-1 relative group"
                 onMouseEnter={() => setIsCategoriesOpen(true)}
                 onMouseLeave={() => setIsCategoriesOpen(false)}
@@ -167,7 +167,7 @@ export default function Header() {
                 <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isCategoriesOpen ? 'rotate-180' : ''}`} />
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
               </motion.button>
-              
+
               <AnimatePresence>
                 {isCategoriesOpen && (
                   <motion.div
@@ -183,49 +183,54 @@ export default function Header() {
                       <h3 className="text-sm font-semibold text-gray-900">Shop by Category</h3>
                     </div>
                     {categories.map((category, index) => (
-                      <motion.a
+                      <motion.div
                         key={category.id}
-                        href={`/category/${category.slug}`}
                         className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 hover:text-primary-600 transition-all duration-200 group"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-2 h-2 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-                          <span className="font-medium">{category.name}</span>
-                        </div>
-                      </motion.a>
+                        <Link to={`/category/${category.slug}`}>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                            <span className="font-medium">{category.name}</span>
+                          </div>
+                        </Link>
+
+                      </motion.div>
                     ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            <motion.a 
-              href="/combos" 
+            <motion.div
               className="text-gray-700 hover:text-primary-600 transition-all duration-200 font-medium relative group"
               whileHover={{ y: -2 }}
             >
-              Combos
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
-            </motion.a>
-            <motion.a 
-              href="/about" 
+              <Link to="/combos">
+                Combos
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
+              </Link>
+            </motion.div>
+            <motion.div
               className="text-gray-700 hover:text-primary-600 transition-all duration-200 font-medium relative group"
               whileHover={{ y: -2 }}
             >
-              About
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
-            </motion.a>
-            <motion.a 
-              href="/contact" 
+              <Link to="/about">
+                About
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
+              </Link>
+            </motion.div>
+            <motion.div
               className="text-gray-700 hover:text-primary-600 transition-all duration-200 font-medium relative group"
               whileHover={{ y: -2 }}
             >
-              Contact
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
-            </motion.a>
+              <Link to="/contact">
+                Contact
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-500 group-hover:w-full transition-all duration-300"></span>
+              </Link>
+            </motion.div>
           </div>
 
           {/* Search & Actions */}
@@ -249,7 +254,7 @@ export default function Header() {
             >
               <Heart className="w-5 h-5" />
               {wishlistState.items.length > 0 && (
-                <motion.span 
+                <motion.span
                   className="absolute -top-1 -right-1 bg-gradient-to-r from-secondary-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -269,7 +274,7 @@ export default function Header() {
             >
               <ShoppingCart className="w-5 h-5" />
               {cartState.items.length > 0 && (
-                <motion.span 
+                <motion.span
                   className="absolute -top-1 -right-1 bg-gradient-to-r from-secondary-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -393,46 +398,46 @@ export default function Header() {
               className="lg:hidden mt-4 bg-gradient-to-br from-gray-50 to-primary-50 rounded-xl p-6 border border-gray-100"
             >
               <div className="space-y-4">
-                <a 
-                  href="/" 
+                <Link
+                  to="/"
                   className="block text-gray-700 hover:text-primary-600 transition-colors duration-200 font-medium py-2"
                 >
                   Home
-                </a>
-                
+                </Link>
+
                 <div>
                   <h3 className="text-gray-900 font-semibold mb-3 text-sm uppercase tracking-wide">Categories</h3>
                   <div className="space-y-2 ml-4">
                     {categories.map((category) => (
-                      <a
+                      <Link
                         key={category.id}
-                        href={`/category/${category.slug}`}
+                        to={`/category/${category.slug}`}
                         className="block text-gray-600 hover:text-primary-600 transition-colors duration-200 py-1"
                       >
                         {category.name}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
 
-                <a 
-                  href="/combos" 
+                <Link
+                  to="/combos"
                   className="block text-gray-700 hover:text-primary-600 transition-colors duration-200 font-medium py-2"
                 >
                   Combos
-                </a>
-                <a 
-                  href="/about" 
+                </Link>
+                <Link
+                  to="/about"
                   className="block text-gray-700 hover:text-primary-600 transition-colors duration-200 font-medium py-2"
                 >
                   About
-                </a>
-                <a 
-                  href="/contact" 
+                </Link>
+                <Link
+                  to="/contact"
                   className="block text-gray-700 hover:text-primary-600 transition-colors duration-200 font-medium py-2"
                 >
                   Contact
-                </a>
+                </Link>
               </div>
             </motion.div>
           )}

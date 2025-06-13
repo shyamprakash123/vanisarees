@@ -5,6 +5,7 @@ interface WishlistItem {
   name: string;
   price: number;
   image: string;
+  slug: string;
 }
 
 interface WishlistState {

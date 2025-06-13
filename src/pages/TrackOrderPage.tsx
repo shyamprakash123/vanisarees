@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Package, Truck, CheckCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
+import { Link } from 'react-router-dom';
 
 interface Order {
   id: string;
@@ -270,20 +271,20 @@ export default function TrackOrderPage() {
                   If you have any questions about your order, feel free to contact us.
                 </p>
                 <div className="flex space-x-4">
-                  <a
-                    href={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER}?text=Hi, I need help with my order ${order.id}`}
+                  <Link
+                    to={`https://wa.me/${import.meta.env.VITE_WHATSAPP_NUMBER}?text=Hi, I need help with my order ${order.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300"
                   >
                     WhatsApp Support
-                  </a>
-                  <a
-                    href={`mailto:${import.meta.env.VITE_ADMIN_EMAIL}?subject=Order Support - ${order.id}`}
+                  </Link>
+                  <Link
+                    to={`mailto:${import.meta.env.VITE_ADMIN_EMAIL}?subject=Order Support - ${order.id}`}
                     className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-300"
                   >
                     Email Support
-                  </a>
+                  </Link>
                 </div>
               </div>
             </motion.div>
