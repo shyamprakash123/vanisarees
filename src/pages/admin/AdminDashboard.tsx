@@ -12,6 +12,7 @@ import {
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { Link } from 'react-router-dom';
+import AdminLayout from '../../components/Admin/AdminLayout';
 
 interface DashboardStats {
   totalOrders: number;
@@ -110,25 +111,27 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading dashboard...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
+    <AdminLayout>
+      <div className="space-y-8">
+        <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
           <p className="text-gray-600">Welcome back! Here's what's happening with your store.</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((stat, index) => (
             <motion.div
               key={stat.title}
@@ -239,7 +242,7 @@ export default function AdminDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-8 bg-orange-50 border border-orange-200 rounded-lg p-4"
+            className="bg-orange-50 border border-orange-200 rounded-lg p-4"
           >
             <div className="flex items-center">
               <AlertCircle className="w-5 h-5 text-orange-600 mr-2" />
@@ -256,6 +259,6 @@ export default function AdminDashboard() {
           </motion.div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }

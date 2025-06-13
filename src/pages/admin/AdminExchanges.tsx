@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, CheckCircle, X, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import AdminLayout from '../../components/Admin/AdminLayout';
+import toast from 'react-hot-toast';
 
 interface ExchangeRequest {
   id: string;
@@ -39,6 +41,7 @@ export default function AdminExchanges() {
       setExchanges(data || []);
     } catch (error) {
       console.error('Error fetching exchanges:', error);
+      toast.error('Failed to fetch exchange requests');
     } finally {
       setLoading(false);
     }
@@ -56,11 +59,13 @@ export default function AdminExchanges() {
         .eq('id', exchangeId);
       
       if (error) throw error;
+      toast.success('Exchange status updated successfully');
       fetchExchanges();
       setSelectedExchange(null);
       setAdminNotes('');
     } catch (error) {
       console.error('Error updating exchange status:', error);
+      toast.error('Failed to update exchange status');
     }
   };
 
@@ -90,25 +95,27 @@ export default function AdminExchanges() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading exchange requests...</p>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading exchange requests...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
+    <AdminLayout>
+      <div className="space-y-6">
+        <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Exchanges</h1>
           <p className="text-gray-600">Review and process exchange requests</p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -226,125 +233,127 @@ export default function AdminExchanges() {
 
         {/* Exchange Details Modal */}
         {selectedExchange && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Exchange Request Details
-                </h2>
-                <button
-                  onClick={() => setSelectedExchange(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Order ID</p>
-                    <p className="text-sm text-gray-900">#{selectedExchange.order_id.slice(0, 8)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Status</p>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedExchange.status)}`}>
-                      {selectedExchange.status.charAt(0).toUpperCase() + selectedExchange.status.slice(1)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Customer Email</p>
-                    <p className="text-sm text-gray-900">{selectedExchange.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Phone</p>
-                    <p className="text-sm text-gray-900">{selectedExchange.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Reason</p>
-                    <p className="text-sm text-gray-900 capitalize">
-                      {selectedExchange.reason.replace('-', ' ')}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Request Date</p>
-                    <p className="text-sm text-gray-900">
-                      {new Date(selectedExchange.created_at).toLocaleString('en-IN')}
-                    </p>
-                  </div>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Exchange Request Details
+                  </h2>
+                  <button
+                    onClick={() => setSelectedExchange(null)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
 
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-2">Description</p>
-                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
-                    {selectedExchange.description}
-                  </p>
-                </div>
-
-                {selectedExchange.video_url && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 mb-2">Video Proof</p>
-                    <video
-                      controls
-                      className="w-full max-h-64 rounded-lg"
-                      src={selectedExchange.video_url}
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Order ID</p>
+                      <p className="text-sm text-gray-900">#{selectedExchange.order_id.slice(0, 8)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Status</p>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedExchange.status)}`}>
+                        {selectedExchange.status.charAt(0).toUpperCase() + selectedExchange.status.slice(1)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Customer Email</p>
+                      <p className="text-sm text-gray-900">{selectedExchange.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Phone</p>
+                      <p className="text-sm text-gray-900">{selectedExchange.phone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Reason</p>
+                      <p className="text-sm text-gray-900 capitalize">
+                        {selectedExchange.reason.replace('-', ' ')}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Request Date</p>
+                      <p className="text-sm text-gray-900">
+                        {new Date(selectedExchange.created_at).toLocaleString('en-IN')}
+                      </p>
+                    </div>
                   </div>
-                )}
 
-                {selectedExchange.admin_notes && (
                   <div>
-                    <p className="text-sm font-medium text-gray-500 mb-2">Admin Notes</p>
-                    <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-lg">
-                      {selectedExchange.admin_notes}
+                    <p className="text-sm font-medium text-gray-500 mb-2">Description</p>
+                    <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                      {selectedExchange.description}
                     </p>
                   </div>
-                )}
 
-                {selectedExchange.status === 'pending' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Admin Notes (Optional)
-                    </label>
-                    <textarea
-                      value={adminNotes}
-                      onChange={(e) => setAdminNotes(e.target.value)}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Add notes for the customer..."
-                    />
-                  </div>
-                )}
+                  {selectedExchange.video_url && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-2">Video Proof</p>
+                      <video
+                        controls
+                        className="w-full max-h-64 rounded-lg"
+                        src={selectedExchange.video_url}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  )}
 
-                {selectedExchange.status === 'pending' && (
-                  <div className="flex space-x-4">
-                    <button
-                      onClick={() => updateExchangeStatus(selectedExchange.id, 'approved', adminNotes)}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Approve</span>
-                    </button>
-                    <button
-                      onClick={() => updateExchangeStatus(selectedExchange.id, 'rejected', adminNotes)}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
-                    >
-                      <X className="w-4 h-4" />
-                      <span>Reject</span>
-                    </button>
-                  </div>
-                )}
+                  {selectedExchange.admin_notes && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 mb-2">Admin Notes</p>
+                      <p className="text-sm text-gray-900 bg-blue-50 p-3 rounded-lg">
+                        {selectedExchange.admin_notes}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedExchange.status === 'pending' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-2">
+                        Admin Notes (Optional)
+                      </label>
+                      <textarea
+                        value={adminNotes}
+                        onChange={(e) => setAdminNotes(e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="Add notes for the customer..."
+                      />
+                    </div>
+                  )}
+
+                  {selectedExchange.status === 'pending' && (
+                    <div className="flex space-x-4">
+                      <button
+                        onClick={() => updateExchangeStatus(selectedExchange.id, 'approved', adminNotes)}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Approve</span>
+                      </button>
+                      <button
+                        onClick={() => updateExchangeStatus(selectedExchange.id, 'rejected', adminNotes)}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
+                      >
+                        <X className="w-4 h-4" />
+                        <span>Reject</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </div>
-    </div>
+    </AdminLayout>
   );
 }
